@@ -1,0 +1,2 @@
+UnEditAbleDefaultConfig 的配置项存储一些常量,只有开发者能改
+EditAbleDefaultConfig 存储可配置项的默认值,设置页静态资源如果调取不到配置的持久文件,就会从这取得
