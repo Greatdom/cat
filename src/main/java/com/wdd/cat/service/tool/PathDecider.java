@@ -1,7 +1,7 @@
 package com.wdd.cat.service.tool;
 
 import com.wdd.cat.common.enums.ThinkingPath;
-import com.wdd.cat.message.InboundMessage;
+import com.wdd.cat.message.Message;
 import org.springframework.stereotype.Component;
 
 
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PathDecider {
 
-    public ThinkingPath decide(InboundMessage message, DecisionContext ctx) {
+    public ThinkingPath decide(Message message, DecisionContext ctx) {
         // TODO 第一版直接返回 DELIBERATION，先跑通链路
         return ThinkingPath.DELIBERATION;
     }

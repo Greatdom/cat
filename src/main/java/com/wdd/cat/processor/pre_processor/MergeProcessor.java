@@ -1,6 +1,6 @@
 package com.wdd.cat.processor.pre_processor;
 
-import com.wdd.cat.message.InboundMessage;
+import com.wdd.cat.message.Message;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -42,7 +42,7 @@ public class MergeProcessor implements PreProcessor {
     }
 
     @Override
-    public List<InboundMessage> process(List<InboundMessage> in) {
+    public List<Message> process(List<Message> in) {
         // TODO  ChannelKind.ESP32 时原样返回，不合并
         // TODO  将原始数据按时间戳顺序按"存档:渠道:具体聊天"分桶进入不同的内部queue
         // TODO 每次process时以一个原始信息为单位取出时间戳至今已有Ams的消息进行合并

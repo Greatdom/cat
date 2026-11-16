@@ -1,7 +1,7 @@
 package com.wdd.cat.service;
 
 
-import com.wdd.cat.message.InboundMessage;
+import com.wdd.cat.message.Message;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 @Component
 public class TriggerService {
 
-    public void trigger(List<InboundMessage> messages){
+    public void trigger(List<Message> messages){
         //遍历信息,根据消息性质进入不同链路
         // TODO 拿 DecisionContext → pathDecider.decide() → 按结果分派
         // TODO REFLEX     → reflexService.run(trigger,ctx)

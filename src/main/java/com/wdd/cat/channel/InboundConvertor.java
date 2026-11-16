@@ -1,6 +1,6 @@
 package com.wdd.cat.channel;
 import com.wdd.cat.common.enums.ChannelKind;
-import com.wdd.cat.message.InboundMessage;
+import com.wdd.cat.message.Message;
 
 import java.util.List;
 
@@ -18,5 +18,5 @@ import java.util.List;
 
 public interface InboundConvertor<T> {
     ChannelKind kind();
-    List<InboundMessage> convert(List<T> raw, ConvertContext context);
+    List<Message> convert(List<T> raw, ConvertContext context);
 }

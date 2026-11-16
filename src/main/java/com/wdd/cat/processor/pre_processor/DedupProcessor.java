@@ -12,7 +12,7 @@ package com.wdd.cat.processor.pre_processor;
  **/
 
 
-import com.wdd.cat.message.InboundMessage;
+import com.wdd.cat.message.Message;
 import com.wdd.cat.messagecache.DeliveryState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,7 +36,7 @@ public class DedupProcessor implements PreProcessor {
     }
 
     @Override
-    public List<InboundMessage> process(List<InboundMessage> in) {
+    public List<Message> process(List<Message> in) {
         // TODO in 为空直接返回 List.of()
         // TODO 逐条过滤：
         //      消息已经被处理过 : deliveryState.isProcessed(msg.archiveId(), msg.channelMessageId())  → 标记完最高水位后丢

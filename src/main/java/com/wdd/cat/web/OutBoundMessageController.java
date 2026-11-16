@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * &#064create: 2026-11-16 09:49
  **/
 @RestController
-@RequestMapping("/api/inbound_message")
+@RequestMapping("/api/outbound_message")
 public class OutBoundMessageController {
 
     //TODO从跳板接收消息

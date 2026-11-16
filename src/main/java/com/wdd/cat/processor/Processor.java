@@ -1,7 +1,7 @@
 package com.wdd.cat.processor;
 
 
-import com.wdd.cat.message.InboundMessage;
+import com.wdd.cat.message.Message;
 
 import java.util.List;
 
@@ -18,5 +18,5 @@ import java.util.List;
 public interface Processor {
     String kind();
     int order();                    // 执行顺序,小的先执行
-    List<InboundMessage> process(List<InboundMessage> in); //处理器核心方法
+    List<Message> process(List<Message> in); //处理器核心方法
 }

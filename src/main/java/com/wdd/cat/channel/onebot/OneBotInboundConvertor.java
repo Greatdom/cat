@@ -4,7 +4,7 @@ package com.wdd.cat.channel.onebot;
 import com.wdd.cat.channel.ConvertContext;
 import com.wdd.cat.channel.InboundConvertor;
 import com.wdd.cat.common.enums.ChannelKind;
-import com.wdd.cat.message.InboundMessage;
+import com.wdd.cat.message.Message;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class OneBotInboundConvertor implements InboundConvertor {
     }
 
     @Override
-    public List<InboundMessage> convert(List raw, ConvertContext context) {
+    public List<Message> convert(List raw, ConvertContext context) {
         return List.of();
     }
 }

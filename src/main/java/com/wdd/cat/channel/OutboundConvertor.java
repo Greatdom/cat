@@ -12,11 +12,11 @@ package com.wdd.cat.channel;
  **/
 
 import com.wdd.cat.common.enums.ChannelKind;
-import com.wdd.cat.message.OutboundMessage;
+import com.wdd.cat.message.Message;
 
 import java.util.List;
 
 public interface OutboundConvertor<P> {
     ChannelKind kind();
-    List<P> convert(OutboundMessage message);
+    List<P> convert(Message message);
 }
