@@ -1,4 +1,4 @@
-package com.wdd.cat.prosessor;
+package com.wdd.cat.prosessor.preprocessor;
 
 
 import com.wdd.cat.message.InboundMessage;
@@ -20,8 +20,4 @@ public interface PreProcessor {
     String kind();
     int order();                    // 执行顺序,小的先执行
     List<InboundMessage> process(List<InboundMessage> in); //处理器核心方法
-    /** 让入站滑动窗口吐出所有队列,默认什么都不做。 */
-    default List<InboundMessage> outQueue() {
-        return List.of();
-    }
 }

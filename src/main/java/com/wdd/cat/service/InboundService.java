@@ -1,8 +1,9 @@
 package com.wdd.cat.service;
 
 
-import com.wdd.cat.prosessor.PreProcessor;
+import com.wdd.cat.prosessor.preprocessor.PreProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -24,36 +25,26 @@ public class InboundService {
     @Autowired
     private TriggerService triggerService;
 
-    //业务流程:InboundService内有个tick方法,按固定时间轮询拉取所有消息
-    //如果上一轮消息链表的前处理还没完毕,跳过,等下一轮重试
-    //tick的轮询时间和各poller的轮询时间是独立的:
-    // 例如.在tick方法设置轮询时间100ms,却在OneBotPoller的poll内调用间隔为2000ms的定时器,未满间隔就保持静默,
-    //而在esp的poller里,这个定时器也是100ms,或者是弃用定时器,改用ws协议拉取
-    //tick方法拉取到的消息后先进入前处理器HeadProcessor按策略处理,处理后将消息传给TriggerService继续处理
+    //handle方法从具体的poller拉到消息会先缓存到这里,供第一个前处理器拉取
+//    list<InboundMessage> inboundMessageCache; 要线程安全的容器
 
-//    @Scheduled(fixedDelayString = "${cat.inbound.heartbeat-ms:2000}")
-
-//    void tick() {
-//        for (每个存档) {
-
-    //        if(上一轮前处理还没完成){return;}
-//            List<InboundMessage> chainInput = new ArrayList<>();
-//
-//            // ① 每个处理器先吐出自己的积压
-//            for (PreProcessor p : sorted) {
-//                chainInput.addAll(p.drain());
-//            }
-//
-//            // ② 再拉新消息
-//            if(chainInput为空)
-//              chainInput.addAll(pollAndConvert());
-//
-//            // ③ 整条链跑一遍
-//            for (PreProcessor p : sorted) {
-//                chainInput = p.process(chainInput);
-//            }
+    @Scheduled(fixedDelayString = "${cat.inbound_service.handle.ms:500}")
+    void handle(){
+        //遍历具体的poller拉取信息后往inboundMessageCache追加信息
+    }
+    @Scheduled(fixedDelayString = "${cat.inbound_service.preprocess.ms:500}")
+    void preprocess(){
+        //第一个前处理器从inboundMessageCache获取信息处理,后一个前处理器得到前一个处理器的处理结果继续加工,最后一个前处理器将处理结果交给TriggerService
+        //list<InboundMessage> current = new list<>;
+        // inboundMessageCache.drainTo(processed);
+//        for(PreProcessor p:preProcessor){
+//            List<InboundMessage> next = p.process(current);
+//            current = (next == null) ? List.of() : next;
 //        }
-            //chainInput给triggerService继续处理
-//    }
+//        if (!current.isEmpty()) {
+//            triggerService.trigger(current);
+//        }
+    }
+
 
 }
