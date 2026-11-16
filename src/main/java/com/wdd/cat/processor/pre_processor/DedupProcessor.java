@@ -1,5 +1,11 @@
 package com.wdd.cat.processor.pre_processor;
 
+import com.wdd.cat.message.Message;
+import com.wdd.cat.common.cache.DeliveryState;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * &#064program: cat
@@ -12,12 +18,6 @@ package com.wdd.cat.processor.pre_processor;
  **/
 
 
-import com.wdd.cat.message.Message;
-import com.wdd.cat.messagecache.DeliveryState;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class DedupProcessor implements PreProcessor {

@@ -4,8 +4,7 @@ package com.wdd.cat.message;
 /**
  * &#064program: cat
  * <p>
- * &#064description: 消息里的一段内容。
- * <p>
+ * &#064description: 消息里的真正内容
  * &#064author: black-cat
  * <p>
  * &#064create: 2026-11-15 21:13

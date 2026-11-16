@@ -1,4 +1,4 @@
-package com.wdd.cat.messagecache;
+package com.wdd.cat.common.cache;
 
 
 import org.springframework.stereotype.Component;

@@ -19,6 +19,7 @@ import java.util.List;
  **/
 
 public class OneBotInboundConvertor implements InboundConvertor {
+    //包含E:\程序代码\dsh\references\cat-legacy\cat\src\main\java\com\wdd\cat\link\SegmentTranslator.java的业务
     //TODO
     @Override
     public ChannelKind kind() {

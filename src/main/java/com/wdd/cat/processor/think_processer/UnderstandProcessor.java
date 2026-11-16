@@ -29,7 +29,7 @@ public class UnderstandProcessor implements ThinkProcessor{
 
     @Override
     public List<Message> process(List<Message> in) {
-        //理解：这条消息是什么（急不急、重不重要、对我好坏）
+        //理解：这条消息是什么（急不急、重不重要、对我好坏）,给Message塞进Assessment
         return List.of();
     }
 }

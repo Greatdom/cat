@@ -17,6 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/outbound_message")
 public class OutBoundMessageController {
 
-    //TODO从跳板接收消息
+    //TODO从跳板接收消息,返回ack信息
 
 }

@@ -2,6 +2,9 @@ package com.wdd.cat.message;
 
 
 import com.wdd.cat.common.enums.ChannelKind;
+import com.wdd.cat.ego.EgoDecision;
+import com.wdd.cat.message.child.Assessment;
+import com.wdd.cat.message.child.RecallBundle;
 
 /**
  * &#064program: cat
@@ -22,12 +25,16 @@ public record Message(
         Content content,            // 消息内容（文本/文件/坐标/多段）
         long timestamp,             // 消息时间戳（毫秒）
 
-        String raw                  // 原始报文，调试用，平时可以丢
+        Object raw,                  // 原始报文，调试用，平时可以丢
 
         // ── 无状态化：给 DSH 拼上下文用 ──
         //TODO 根据实际业务拓展字段
-//        String memoryContext,       // 记忆召回结果（慢变，按需刷新）
-//        String sceneContext         // 本轮情境（快变，每轮重算）
+        RecallBundle RecallBundle,   //本轮情境
+        Assessment assessment,       //对消息的理解
+        EgoDecision egoDecision      //自我决定
+//        Context context,           //最终上下文
+//        Situation situation       //本轮情境
+
 ) {
     /** 全部文本，给拼 Prompt 用。 */
     public String text() {
