@@ -18,6 +18,7 @@ import java.util.List;
 
 public interface ChannelPoller<T> {
     ChannelKind kind();
+    //TODO对于同一个渠道,如果收发频率生效,那么poller和sender的频率是绑定的
 
     /** 拉一批。抛 PollException 表示这次拉失败，没拉到不等于没消息。 */
     List<T> poll(PollContext context) throws PollException;

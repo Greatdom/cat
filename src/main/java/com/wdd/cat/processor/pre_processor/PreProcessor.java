@@ -1,9 +1,7 @@
-package com.wdd.cat.prosessor.preprocessor;
+package com.wdd.cat.processor.pre_processor;
 
 
-import com.wdd.cat.message.InboundMessage;
-
-import java.util.List;
+import com.wdd.cat.processor.Processor;
 
 /**
  * &#064program: cat
@@ -16,8 +14,5 @@ import java.util.List;
  * &#064create: 2026-11-15 22:54
  **/
 
-public interface PreProcessor {
-    String kind();
-    int order();                    // 执行顺序,小的先执行
-    List<InboundMessage> process(List<InboundMessage> in); //处理器核心方法
+public interface PreProcessor extends Processor {
 }

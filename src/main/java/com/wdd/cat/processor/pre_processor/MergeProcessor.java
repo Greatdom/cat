@@ -1,4 +1,4 @@
-package com.wdd.cat.prosessor.preprocessor;
+package com.wdd.cat.processor.pre_processor;
 
 import com.wdd.cat.message.InboundMessage;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,7 @@ public class MergeProcessor implements PreProcessor {
 
     @Override
     public String kind() {
-        return "merge";
+        return "MergeProcessor";
     }
 
     @Override

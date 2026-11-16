@@ -17,6 +17,7 @@ import com.wdd.cat.common.enums.ChannelKind;
 public interface ChannelSender<P> {
     ChannelKind kind();
 
+    //TODO对于同一个渠道,如果收发频率生效,那么poller和sender的频率是绑定的
     /** 发。返回发送成功的条数（可能因为拆条、部分失败而小于 payloads.size()）。 */
     int send(long archiveId, String chatType, String chatId, List<P> payloads);
 }

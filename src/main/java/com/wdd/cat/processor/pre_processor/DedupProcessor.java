@@ -1,4 +1,4 @@
-package com.wdd.cat.prosessor.preprocessor;
+package com.wdd.cat.processor.pre_processor;
 
 
 /**
@@ -27,7 +27,7 @@ public class DedupProcessor implements PreProcessor {
 
     @Override
     public String kind() {
-        return "dedup";
+        return "DeliveryState";
     }
 
     @Override

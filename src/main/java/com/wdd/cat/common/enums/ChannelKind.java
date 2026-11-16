@@ -9,8 +9,10 @@ package com.wdd.cat.common.enums;
  **/
 
 public enum ChannelKind {
-    INTERNAL,       // 站内
-    QQ      ;       // QQ
+    INTERNAL_DATE,       // 站内日程发出的消息
+    INTERNAL_DESIRE,       // 站内欲望
+    //站外
+    EXTERNAL_QQ      ;       // QQ
     //TODO 还有没实现的,例如ESP32 WECHAT EXTERNAL_AGENT
 
     public static ChannelKind fromWire(String s){
