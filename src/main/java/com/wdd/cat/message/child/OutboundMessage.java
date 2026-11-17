@@ -16,7 +16,8 @@ import java.util.List;
  **/
 
 public class OutboundMessage extends Message {
-    private List<NormalMessage> messages;   // 维护 NormalMessage 链表
+    private List<NormalMessage> messages;   // 大模型的回答
+    private InboundMessage inboundMessage;  //原来的问题,用于回顾信息
 
     // 增删查等链表操作
     public void add(NormalMessage msg) {
