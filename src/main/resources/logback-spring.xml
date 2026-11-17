@@ -1,61 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  日志配置。
-
-  两件事：
-    1. 控制台输出 —— 开发时直接看
-    2. 文件落盘 —— 滚动 + 保留，不然关掉窗口就全没了（R1.1）
-
-  另外挂了一个自定义附加器把日志喂给内存缓冲，供 /logs 页面读取。
-  那个附加器只收 com.wdd.cat 包下的日志，框架日志不进去。
--->
 <configuration>
-
-    <property name="LOG_DIR" value="${LOG_DIR:-./data/logs}"/>
-    <property name="PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{20} - %msg%n"/>
-
     <!-- 控制台 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>${PATTERN}</pattern>
-            <charset>UTF-8</charset>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- 滚动文件：按天 + 单文件 20MB 上限，保留 7 天 -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_DIR}/cat.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_DIR}/cat-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>20MB</maxFileSize>
-            <maxHistory>7</maxHistory>
-            <totalSizeCap>200MB</totalSizeCap>
-        </rollingPolicy>
-        <encoder>
-            <pattern>${PATTERN}</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-    </appender>
+    <!-- 写进内存缓冲，供 /api/logs 读 -->
+    <appender name="BUFFER" class="com.wdd.cat.log.LogBufferAppender" />
 
-    <!--
-      内存缓冲附加器：给 /logs 页面用。
-      由 LogBufferAppender 在容器启动后 bind 到 Spring 的 LogBuffer 实例；
-      bind 之前的事件会被丢弃（启动早期那几百毫秒，无所谓）。
-    -->
-    <appender name="BUFFER" class="com.wdd.cat.logs.LogBufferAppender"/>
-
-    <!-- 本服务：INFO 级别，同时进三个地方 -->
-    <logger name="com.wdd.cat" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="BUFFER"/>
-    </logger>
-
-    <!-- 框架：只进控制台和文件，不进内存缓冲 -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="BUFFER" />
     </root>
-
 </configuration>

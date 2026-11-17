@@ -25,7 +25,7 @@ public class HeartBeatController {
     }
     @GetMapping("/health")
     public Result<?> health() {
-        return null;//TODO 检测跳板和服务器是否连接成功
+        return Result.ok("服务器运行中");//TODO 检测跳板和服务器是否连接成功
     }
 
 }
