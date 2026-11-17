@@ -42,7 +42,7 @@ public class PreService {
         preProcessors.sort(Comparator.comparingInt(Processor::order));
     }
 
-    @Scheduled(fixedDelayString = "${cat.pre_service.tick.ms:500}")
+    @Scheduled(fixedDelayString = "${cat.tick.ms:500}")
     void preprocess(){
         //第一个前处理器从inboundService的inboundMessageCache获取信息处理
         // 后一个前处理器得到前一个处理器的处理结果继续加工,最后一个前处理器将处理结果交给TriggerService

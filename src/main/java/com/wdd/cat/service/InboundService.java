@@ -23,7 +23,7 @@ public class InboundService {
 
 //    list<InboundMessage> inboundMessageCache; 维护一个线程安全的容器
 
-    @Scheduled(fixedDelayString = "${cat.inbound_service.tick.ms:500}")
+    @Scheduled(fixedDelayString = "${cat.tick.ms:500}")
     void handle(){
         //遍历具体的poller拉取NormalMessage并转为InboundMessage后往inboundMessageCache追加信息
     }

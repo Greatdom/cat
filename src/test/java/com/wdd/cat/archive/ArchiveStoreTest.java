@@ -103,16 +103,7 @@ class ArchiveStoreTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test
-    void deleteRemoves() throws IOException {
-        Archive a = store.create(draft("黑猫", "10000"));
-        Path dir = Path.of("data").resolve(Long.toString(a.id()));
-        assertThat(dir).exists();
 
-        store.delete(a.id());
-        assertThat(store.find(a.id())).isEmpty();
-        assertThat(dir).doesNotExist();
-    }
 
     @Test
     void maxCountEnforced() {

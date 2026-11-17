@@ -18,7 +18,7 @@ public class OutBoundService {
 
     //维护一个线程安全的消息容器用于缓存
 
-    @Scheduled(fixedDelayString = "${cat.inbound_service.tick.ms:500}")
+    @Scheduled(fixedDelayString = "${cat.tick.ms:500}")
     void handle(){
         //遍历具体的sender,将缓存OutboundMessage拆成NormalMessage并按渠道送出去
     }
