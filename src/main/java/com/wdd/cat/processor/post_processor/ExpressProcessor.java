@@ -3,6 +3,7 @@ package com.wdd.cat.processor.post_processor;
 
 import com.wdd.cat.message.child.NormalMessage;
 import com.wdd.cat.message.child.OutboundMessage;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * <p>
  * &#064create: 2026-11-16 19:28
  **/
-
+@Component
 public class ExpressProcessor implements PostProcessor{
     //废弃E:\程序代码\dsh\references\cat-legacy\cat\src\main\java\com\wdd\cat\link\PromptComposer.java的业务
     @Override

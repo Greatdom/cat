@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * &#064program: cat
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * <p>
  * &#064create: 2026-11-16 16:09
  **/
-@Component
+@RestController
 @RequestMapping("/api/date")
 @Deprecated
 public class DateController {

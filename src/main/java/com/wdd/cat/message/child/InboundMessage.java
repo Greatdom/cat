@@ -19,6 +19,29 @@ public class InboundMessage extends NormalMessage {
     private Assessment assessment;       // 对消息的理解
     private EgoDecision egoDecision;     // 自我决定
 
-    //TODO 重写string,equals和hashcode方法
+    public RecallBundle getRecallBundle() {
+        return recallBundle;
+    }
+
+    public void setRecallBundle(RecallBundle recallBundle) {
+        this.recallBundle = recallBundle;
+    }
+
+    public Assessment getAssessment() {
+        return assessment;
+    }
+
+    public void setAssessment(Assessment assessment) {
+        this.assessment = assessment;
+    }
+
+    public EgoDecision getEgoDecision() {
+        return egoDecision;
+    }
+
+    public void setEgoDecision(EgoDecision egoDecision) {
+        this.egoDecision = egoDecision;
+    }
+//TODO 重写string,equals和hashcode方法
 
 }

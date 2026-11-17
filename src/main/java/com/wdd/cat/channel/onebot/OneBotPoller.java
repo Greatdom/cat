@@ -5,6 +5,7 @@ import com.wdd.cat.channel.ChannelPoller;
 import com.wdd.cat.channel.PollContext;
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.exception.PollException;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
  * <p>
  * &#064create: 2026-11-15 22:27
  **/
-
+@Component
 public class OneBotPoller implements ChannelPoller {
     //TODO
     @Override

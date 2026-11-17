@@ -17,6 +17,39 @@ public abstract class Message {
     private long archiveId;             // 归哪个存档
     private ChannelKind channel;        // 渠道类型
     private MessageSource source;       // 从哪来 + 谁发的
+
+    public long getArchiveId() {
+        return archiveId;
+    }
+
+    public void setArchiveId(long archiveId) {
+        this.archiveId = archiveId;
+    }
+
+    public ChannelKind getChannel() {
+        return channel;
+    }
+
+    public void setChannel(ChannelKind channel) {
+        this.channel = channel;
+    }
+
+    public MessageSource getSource() {
+        return source;
+    }
+
+    public void setSource(MessageSource source) {
+        this.source = source;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     private long timestamp;             // 消息时间戳（毫秒）
 
     /** 会话类型 "private" / "group"。 */

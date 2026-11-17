@@ -3,6 +3,7 @@ package com.wdd.cat.processor.think_processer;
 
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.NormalMessage;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * <p>
  * &#064create: 2026-11-16 19:16
  **/
-
+@Component
 public class EgoProcessor implements ThinkProcessor {
     @Override
     public String kind() {

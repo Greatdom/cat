@@ -21,12 +21,12 @@ import java.util.Set;
 public class ChannelRegistry {
 
     /** 入站一对：poller 负责拉取，convertor 负责把拉到的原始报文转成 InboundMessage。 */
-    public Optional<InboundPair> inboundPair(ChannelKind kind){
+    public Optional<InboundPair<?>> inboundPair(ChannelKind kind){
         return Optional.empty();//TODO
     }
 
     /** 出站一对：convertor 负责把 OutboundMessage 转成载荷，sender 负责把载荷发出去。 */
-    public Optional<OutboundPair> outboundPair(ChannelKind kind){
+    public Optional<OutboundPair<?>> outboundPair(ChannelKind kind){
         return Optional.empty();//TODO
     }
 
@@ -35,6 +35,9 @@ public class ChannelRegistry {
         return null;//TODO
     }
 
-    public record InboundPair(ChannelPoller<?> poller, InboundConvertor<?> convertor) {}
-    public record OutboundPair(OutboundConvertor<?> convertor, ChannelSender<?> sender) {}
+    public record InboundPair<T>(ChannelPoller<T> poller, InboundConvertor<T> convertor) {}
+    public record OutboundPair<P>(OutboundConvertor<P> convertor, ChannelSender<P> sender) {}
+//
+//    public record InboundPair(ChannelPoller<?> poller, InboundConvertor<?> convertor) {}
+//    public record OutboundPair(OutboundConvertor<?> convertor, ChannelSender<?> sender) {}
 }

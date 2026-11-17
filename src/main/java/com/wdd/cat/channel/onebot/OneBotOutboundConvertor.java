@@ -4,6 +4,7 @@ package com.wdd.cat.channel.onebot;
 import com.wdd.cat.channel.OutboundConvertor;
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.message.child.NormalMessage;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
  * <p>
  * &#064create: 2026-11-15 22:30
  **/
-
+@Component
 public class OneBotOutboundConvertor implements OutboundConvertor {
     //TODO
     @Override

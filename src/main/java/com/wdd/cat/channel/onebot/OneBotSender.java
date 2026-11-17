@@ -3,6 +3,7 @@ package com.wdd.cat.channel.onebot;
 
 import com.wdd.cat.channel.ChannelSender;
 import com.wdd.cat.common.enums.ChannelKind;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * <p>
  * &#064create: 2026-11-15 22:32
  **/
-
+@Component
 public class OneBotSender implements ChannelSender {
     @Override
     public ChannelKind kind() {

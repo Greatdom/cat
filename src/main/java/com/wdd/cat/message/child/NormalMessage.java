@@ -23,7 +23,21 @@ public class NormalMessage extends Message {
         return "";
     }
 
+    public Object getRaw() {
+        return raw;
+    }
 
+    public void setRaw(Object raw) {
+        this.raw = raw;
+    }
 
-    //TODO 重写string,equals和hashcode方法
+    public Content getContent() {
+        return content;
+    }
+
+    public void setContent(Content content) {
+        this.content = content;
+    }
+
+//TODO 重写string,equals和hashcode方法
 }
