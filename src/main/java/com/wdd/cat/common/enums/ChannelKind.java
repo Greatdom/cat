@@ -4,6 +4,10 @@ package com.wdd.cat.common.enums;
 /**
  * &#064program: cat
  * &#064description: 外部连接来源的枚举,用来点明消息的来源
+ * 约定:
+ * 1.INTERNAL开头是服务器自己发出的消息类型
+ * 2.ADD开头是大模型在回复消息时产生的消息类型
+ * 3.EXTERNAL开头是外部链接会产生的消息类型
  * &#064author: black-cat
  * &#064create: 2026-11-15 19:51
  **/
