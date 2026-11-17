@@ -1,6 +1,7 @@
 package com.wdd.cat.processor.think_processer;
 
 
+import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.NormalMessage;
 import org.springframework.stereotype.Component;
@@ -19,13 +20,13 @@ import java.util.List;
 @Component
 public class EgoProcessor implements ThinkProcessor {
     @Override
-    public String kind() {
-        return "EgoProcessor";
+    public ProcessorKind kind() {
+        return ProcessorKind.EGO_PROCESSOR;
     }
 
     @Override
     public int order() {
-        return 300;
+        return ProcessorKind.EGO_PROCESSOR.getOrder();
     }
 
     @Override

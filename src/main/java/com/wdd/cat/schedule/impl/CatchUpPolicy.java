@@ -1,5 +1,6 @@
 package com.wdd.cat.schedule.impl;
 
+import com.wdd.cat.common.enums.MissedPolicyKind;
 import com.wdd.cat.schedule.MissedPolicy;
 import com.wdd.cat.schedule.ScheduleItem;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,8 @@ import org.springframework.stereotype.Component;
 public class CatchUpPolicy implements MissedPolicy {
 
     @Override
-    public String kind() {
-        return "catch-up";
+    public MissedPolicyKind kind() {
+        return MissedPolicyKind.CATCH_UP;
     }
 
     @Override

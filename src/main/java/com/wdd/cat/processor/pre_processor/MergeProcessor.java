@@ -1,5 +1,6 @@
 package com.wdd.cat.processor.pre_processor;
 
+import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.NormalMessage;
 import org.springframework.stereotype.Component;
@@ -33,13 +34,13 @@ public class MergeProcessor implements PreProcessor {
     //XXX<Queue> queues;
 
     @Override
-    public String kind() {
-        return "MergeProcessor";
+    public ProcessorKind kind() {
+        return ProcessorKind.MERGE_PROCESSOR;
     }
 
     @Override
     public int order() {
-        return 200;
+        return ProcessorKind.MERGE_PROCESSOR.getOrder();
     }
 
     @Override

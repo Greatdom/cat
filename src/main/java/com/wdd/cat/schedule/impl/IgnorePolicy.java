@@ -11,6 +11,7 @@ package com.wdd.cat.schedule.impl;
  * &#064create: 2026-11-16 19:27
  **/
 
+import com.wdd.cat.common.enums.MissedPolicyKind;
 import com.wdd.cat.schedule.MissedPolicy;
 import com.wdd.cat.schedule.ScheduleItem;
 import org.springframework.stereotype.Component;
@@ -19,8 +20,8 @@ import org.springframework.stereotype.Component;
 public class IgnorePolicy implements MissedPolicy {
 
     @Override
-    public String kind() {
-        return "ignore";
+    public MissedPolicyKind kind() {
+        return MissedPolicyKind.IGNORE;
     }
 
     @Override

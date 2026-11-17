@@ -1,6 +1,8 @@
 package com.wdd.cat.state.environment;
 
 
+import com.wdd.cat.common.enums.EnvironmentKind;
+
 /**
  * &#064program: cat
  * <p>
@@ -14,5 +16,5 @@ package com.wdd.cat.state.environment;
 public interface EnvironmentSystem {
     EnvironmentState current();
     void update(EnvironmentUpdate update);
-    String kind();
+    EnvironmentKind kind();
 }

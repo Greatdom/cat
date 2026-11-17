@@ -1,4 +1,5 @@
 package com.wdd.cat.state.physiology;
+import com.wdd.cat.common.enums.PhysiologyKind;
 import com.wdd.cat.state.environment.EnvironmentState;
 
 
@@ -26,5 +27,5 @@ public interface PhysiologySystem {
     void applyComfort(EnvironmentState env);
 
     /** 实现名，用于装配单："none" / "female-cycle" / "energy-only"。 */
-    String kind();
+    PhysiologyKind kind();
 }

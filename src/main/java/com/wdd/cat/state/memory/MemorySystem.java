@@ -1,6 +1,8 @@
 package com.wdd.cat.state.memory;
 
 
+import com.wdd.cat.common.enums.MemoryKind;
+
 /**
  * &#064program: cat
  * <p>
@@ -34,5 +36,5 @@ public interface MemorySystem {
     void resolveAsk(long archiveId, String entryId);
 
     /** 实现名，用于装配单。 */
-    String kind();   // "soul-md" / "fish-memory" / "long-short-term" / "none"
+    MemoryKind kind();   // "soul-md" / "fish-memory" / "long-short-term" / "none"
 }

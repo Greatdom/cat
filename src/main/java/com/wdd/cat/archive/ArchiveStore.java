@@ -107,6 +107,10 @@ public class ArchiveStore {
     private static Path archiveDir(long id) {
         return dataRoot().resolve(Long.toString(id));
     }
+    private static Path rubbishDir(long id) {
+        return dataRoot().resolve("rubbish")
+                .resolve(id + "-" + System.currentTimeMillis());
+    }
 
     // ── 查询 ──
 
@@ -206,29 +210,19 @@ public class ArchiveStore {
 
     public void delete(long id) {
         Archive removed = archives.remove(id);
-        if (removed == null) {
-            return;
+        if (removed == null) return;
+
+        Path from = archiveDir(id);
+        Path to = rubbishDir(id);
+        try {
+            Files.createDirectories(to.getParent());
+            Files.move(from, to);
+        } catch (IOException e) {
+            log.warn("移进回收站失败：{}", e.getMessage());
         }
-        deleteDir(archiveDir(id));
-        log.info("删除存档 {}（{}）", id, removed.name());
+        log.info("存档 {} 移进回收站 {}", id, to);
     }
 
-    private static void deleteDir(Path dir) {
-        if (!Files.isDirectory(dir)) {
-            return;
-        }
-        try (var paths = Files.walk(dir)) {
-            paths.sorted((a, b) -> b.getNameCount() - a.getNameCount()).forEach(p -> {
-                try {
-                    Files.deleteIfExists(p);
-                } catch (IOException ignored) {
-                    // 删不掉就留着
-                }
-            });
-        } catch (IOException ignored) {
-            // 同上
-        }
-    }
 
     /** 改会话绑定状态。 */
     public void markSession(long id, Archive.SessionStatus status) {

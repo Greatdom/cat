@@ -17,11 +17,9 @@ public class EditAbleDefaultConfig {
     /** 一次最多合并几条。 */
     public static int mergeMaxCount = 8;
 
-    /** QQ 拉取间隔（毫秒）。 */
-    public static long qqPollIntervalMs = 2000;
+    /** QQ 拉取和推送的间隔（毫秒）。 */
+    public static long qqPollAndSendIntervalMs = 2000;
 
-    /** 出站两条消息的最小间隔（毫秒）。 */
-    public static long outboundMinIntervalMs = 500;
 
     private EditAbleDefaultConfig() {
     }

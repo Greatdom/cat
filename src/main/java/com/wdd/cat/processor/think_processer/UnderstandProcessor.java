@@ -1,6 +1,7 @@
 package com.wdd.cat.processor.think_processer;
 
 
+import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.NormalMessage;
 import org.springframework.stereotype.Component;
@@ -19,13 +20,13 @@ import java.util.List;
 @Component
 public class UnderstandProcessor implements ThinkProcessor{
     @Override
-    public String kind() {
-        return "UnderstandProcessor";
+    public ProcessorKind kind() {
+        return ProcessorKind.UNDERSTAND_PROCESSOR;
     }
 
     @Override
     public int order() {
-        return 100;
+        return ProcessorKind.UNDERSTAND_PROCESSOR.getOrder();
     }
 
     @Override

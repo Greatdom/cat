@@ -1,11 +1,15 @@
 package com.wdd.cat.service;
 
 
+import com.wdd.cat.processor.Processor;
 import com.wdd.cat.processor.pre_processor.PreProcessor;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -20,14 +24,25 @@ import java.util.List;
 @Component
 public class PreService {
 
-    @Autowired
-    private InboundService inboundService;
-    @Autowired
-    private List<PreProcessor> preProcessor;
-    @Autowired
-    private TriggerService triggerService;
+    private final InboundService inboundService;
+    private final TriggerService triggerService;
+    private final List<PreProcessor> preProcessors;
 
-    @Scheduled(fixedDelayString = "${cat.inbound_service.tick.ms:500}")
+    public PreService(InboundService inboundService,
+                      TriggerService triggerService,
+                      List<PreProcessor> preProcessors) {
+        this.inboundService = inboundService;
+        this.triggerService = triggerService;
+        this.preProcessors = new ArrayList<>(preProcessors);
+    }
+
+    @PostConstruct
+    void checkProcessors() {
+        preProcessors.forEach(Processor::validateKind);
+        preProcessors.sort(Comparator.comparingInt(Processor::order));
+    }
+
+    @Scheduled(fixedDelayString = "${cat.pre_service.tick.ms:500}")
     void preprocess(){
         //第一个前处理器从inboundService的inboundMessageCache获取信息处理
         // 后一个前处理器得到前一个处理器的处理结果继续加工,最后一个前处理器将处理结果交给TriggerService
@@ -41,6 +56,7 @@ public class PreService {
 //            triggerService.trigger(current);
 //        }
     }
+
 
 
 }

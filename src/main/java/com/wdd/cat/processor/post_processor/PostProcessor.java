@@ -1,6 +1,7 @@
 package com.wdd.cat.processor.post_processor;
 
 
+import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.child.OutboundMessage;
 import com.wdd.cat.processor.Processor;
 
@@ -15,4 +16,13 @@ import com.wdd.cat.processor.Processor;
  **/
 
 public interface PostProcessor extends Processor<OutboundMessage> {
+    @Override
+    default void validateKind() {
+        ProcessorKind.ProcessorFamily expected = ProcessorKind.ProcessorFamily.POST_PROCESSOR;
+        if (kind().getFamily() != expected) {
+            throw new IllegalStateException(
+                    getClass().getSimpleName() + " 声明为 " + kind()
+                            + "，但它是 " + expected + " 的实现");
+        }
+    }
 }

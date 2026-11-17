@@ -1,5 +1,6 @@
 package com.wdd.cat.archive;
 
+import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.common.utils.JsonCodec;
 import com.wdd.cat.common.utils.SnowflakeId;
 import org.junit.jupiter.api.AfterEach;
@@ -37,7 +38,7 @@ class ArchiveStoreTest {
     private Archive draft(String name, String account) {
         return new Archive(
                 "1", 0, name, true, null, null,
-                List.of(new Archive.Link(1L, "EXTERNAL_QQ", true, account,
+                List.of(new Archive.Link(1L, ChannelKind.EXTERNAL_QQ, true, account,
                         "http://127.0.0.1:3000", "tok", null)),
                 PipelineConfig.defaultConfig(), null, null
         );

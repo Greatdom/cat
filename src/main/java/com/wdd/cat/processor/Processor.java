@@ -1,6 +1,7 @@
 package com.wdd.cat.processor;
 
 
+import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.Message;
 import com.wdd.cat.message.child.NormalMessage;
 
@@ -17,7 +18,10 @@ import java.util.List;
  **/
 
 public interface Processor<T extends Message>  {
-    String kind();
+    ProcessorKind kind();
     int order();                    // 执行顺序,小的先执行
     List<T> process(List<T> in); //处理器核心方法
+    default void validateKind() {
+        //校验 kind 与实现接口是否匹配
+    }
 }

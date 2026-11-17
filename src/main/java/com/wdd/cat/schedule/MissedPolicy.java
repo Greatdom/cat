@@ -1,6 +1,8 @@
 package com.wdd.cat.schedule;
 
 
+import com.wdd.cat.common.enums.MissedPolicyKind;
+
 /**
  * &#064program: cat
  * <p>
@@ -13,6 +15,6 @@ package com.wdd.cat.schedule;
 
 
 public interface MissedPolicy {
-    String kind();
+    MissedPolicyKind kind();
     void handle(ScheduleItem item, long lateByMs);
 }

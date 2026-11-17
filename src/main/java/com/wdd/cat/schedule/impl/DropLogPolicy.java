@@ -1,5 +1,6 @@
 package com.wdd.cat.schedule.impl;
 
+import com.wdd.cat.common.enums.MissedPolicyKind;
 import com.wdd.cat.schedule.MissedPolicy;
 import com.wdd.cat.schedule.ScheduleItem;
 import org.springframework.stereotype.Component;
@@ -20,8 +21,8 @@ import org.springframework.stereotype.Component;
 public class DropLogPolicy implements MissedPolicy {
 
     @Override
-    public String kind() {
-        return "drop-log";
+    public MissedPolicyKind kind() {
+        return MissedPolicyKind.DROP_LOG;
     }
 
     @Override

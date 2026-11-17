@@ -1,6 +1,7 @@
 package com.wdd.cat.processor.think_processer;
 
 
+import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.NormalMessage;
 import org.springframework.stereotype.Component;
@@ -19,13 +20,13 @@ import java.util.List;
 @Component
 public class RecallProcessor implements ThinkProcessor {
     @Override
-    public String kind() {
-        return "RecallProcessor";
+    public ProcessorKind kind() {
+        return ProcessorKind.RECALL_PROCESSOR;
     }
 
     @Override
     public int order() {
-        return 200;
+        return ProcessorKind.RECALL_PROCESSOR.getOrder();
     }
 
     @Override

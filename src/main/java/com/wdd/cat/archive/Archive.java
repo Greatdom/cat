@@ -55,5 +55,12 @@ public record Archive(
         public boolean isEnabled() {
             return Boolean.TRUE.equals(enabled);
         }
+
+        public Link {
+            if (kind == null) throw new IllegalArgumentException("kind 不能为空");
+            if (kind.getFamily() != ChannelKind.ChannelFamily.EXTERNAL) {
+                throw new IllegalArgumentException("Link 只能用外部渠道：" + kind);
+            }
+        }
     }
 }

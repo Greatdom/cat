@@ -1,6 +1,7 @@
 package com.wdd.cat.processor.post_processor;
 
 
+import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.child.NormalMessage;
 import com.wdd.cat.message.child.OutboundMessage;
 import org.springframework.stereotype.Component;
@@ -20,13 +21,13 @@ import java.util.List;
 public class ExpressProcessor implements PostProcessor{
     //废弃E:\程序代码\dsh\references\cat-legacy\cat\src\main\java\com\wdd\cat\link\PromptComposer.java的业务
     @Override
-    public String kind() {
-        return "ExpressProcessor";
+    public ProcessorKind kind() {
+        return ProcessorKind.EXPRESS_PROCESSOR;
     }
 
     @Override
     public int order() {
-        return 100;
+        return ProcessorKind.EXPRESS_PROCESSOR.getOrder();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.wdd.cat.processor.pre_processor;
 
 
+import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.processor.Processor;
 
@@ -16,4 +17,15 @@ import com.wdd.cat.processor.Processor;
  **/
 
 public interface PreProcessor extends Processor<InboundMessage> {
+
+    @Override
+    default void validateKind() {
+        ProcessorKind.ProcessorFamily expected = ProcessorKind.ProcessorFamily.PRE_PROCESSOR;
+        if (kind().getFamily() != expected) {
+            throw new IllegalStateException(
+                    getClass().getSimpleName() + " 声明为 " + kind()
+                            + "，但它是 " + expected + " 的实现");
+        }
+    }
+
 }

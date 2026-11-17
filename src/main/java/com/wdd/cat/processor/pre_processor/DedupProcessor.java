@@ -1,5 +1,6 @@
 package com.wdd.cat.processor.pre_processor;
 
+import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.NormalMessage;
 import com.wdd.cat.common.cache.DeliveryState;
@@ -27,13 +28,13 @@ public class DedupProcessor implements PreProcessor {
     private DeliveryState deliveryState;
 
     @Override
-    public String kind() {
-        return "DeliveryState";
+    public ProcessorKind kind() {
+        return ProcessorKind.DEDUP_PROCESSOR;
     }
 
     @Override
     public int order() {
-        return 100;
+        return ProcessorKind.DEDUP_PROCESSOR.getOrder();
     }
 
     @Override
