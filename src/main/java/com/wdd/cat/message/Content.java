@@ -51,9 +51,45 @@ public sealed interface Content {
     }
     //TODO应该有更多便利方法
 
-    /** 抽出全部文本,把任意 Content 压缩成一个纯字符串（给 PromptComposer 用）。 */
-    static String plainText(Content c){
-        return null;
-        //TODO
+    /** 抽出全部文本，给拼提示词用。 */
+    static String plainText(Content c) {
+        if (c == null) {
+            return "";
+        }
+        if (c instanceof Text t) {
+            return t.value() == null ? "" : t.value();
+        }
+        if (c instanceof FileRef f) {
+            if (f.fileKind() == null) {
+                return "[文件]";
+            }
+            return switch (f.fileKind()) {
+                case IMAGE -> "[图片]";
+                case AUDIO -> "[语音]";
+                case VIDEO -> "[视频]";
+                case FILE -> "[文件]";
+            };
+        }
+        if (c instanceof Coordinate co) {
+            return "[坐标: " + co.x() + ", " + co.y() + ", " + co.z() + "]";
+        }
+        if (c instanceof Multi m) {
+            if (m.parts() == null || m.parts().isEmpty()) {
+                return "";
+            }
+            StringBuilder sb = new StringBuilder();
+            for (Content part : m.parts()) {
+                String s = plainText(part);
+                if (s.isEmpty()) {
+                    continue;
+                }
+                if (!sb.isEmpty()) {
+                    sb.append(' ');
+                }
+                sb.append(s);
+            }
+            return sb.toString();
+        }
+        return "";
     }
 }
