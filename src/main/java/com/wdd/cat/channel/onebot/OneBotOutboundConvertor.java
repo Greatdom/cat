@@ -3,7 +3,7 @@ package com.wdd.cat.channel.onebot;
 
 import com.wdd.cat.channel.OutboundConvertor;
 import com.wdd.cat.common.enums.ChannelKind;
-import com.wdd.cat.message.Message;
+import com.wdd.cat.message.child.NormalMessage;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class OneBotOutboundConvertor implements OutboundConvertor {
     }
 
     @Override
-    public List convert(Message message) {
+    public List convert(NormalMessage normalMessage) {
         return List.of();
     }
 }

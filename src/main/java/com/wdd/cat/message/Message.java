@@ -2,45 +2,22 @@ package com.wdd.cat.message;
 
 
 import com.wdd.cat.common.enums.ChannelKind;
-import com.wdd.cat.ego.EgoDecision;
-import com.wdd.cat.message.child.Assessment;
-import com.wdd.cat.message.child.RecallBundle;
 
 /**
  * &#064program: cat
  * <p>
- * &#064description: 一条入站消息：跳板收上来、转换成 Java 认识的样子;整条处理链的输入就是它
+ * &#064description: Message父类
  * <p>
  * &#064author: black-cat
  * <p>
- * &#064create: 2026-11-15 21:23
+ * &#064create: 2026-11-17 11:48
  **/
 
-public record Message(
-        long archiveId,             // 归哪个存档
-        String channelMessageId,    // 跳板那边的消息 ID，去重和回执用
-        ChannelKind channel,        // 渠道类型
-
-        MessageSource source,       // 从哪来 + 谁发的
-        Content content,            // 消息内容（文本/文件/坐标/多段）
-        long timestamp,             // 消息时间戳（毫秒）
-
-        Object raw,                  // 原始报文，调试用，平时可以丢
-
-        // ── 无状态化：给 DSH 拼上下文用 ──
-        //TODO 根据实际业务拓展字段
-        RecallBundle RecallBundle,   //本轮情境
-        Assessment assessment,       //对消息的理解
-        EgoDecision egoDecision      //自我决定
-//        Context context,           //最终上下文
-//        Situation situation       //本轮情境
-
-) {
-    /** 全部文本，给拼 Prompt 用。 */
-    public String text() {
-        // TODO return Content.plainText(content)
-        return "";
-    }
+public abstract class Message {
+    private long archiveId;             // 归哪个存档
+    private ChannelKind channel;        // 渠道类型
+    private MessageSource source;       // 从哪来 + 谁发的
+    private long timestamp;             // 消息时间戳（毫秒）
 
     /** 会话类型 "private" / "group"。 */
     public String chatType() {

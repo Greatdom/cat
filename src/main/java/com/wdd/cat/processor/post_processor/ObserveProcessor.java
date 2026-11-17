@@ -1,7 +1,8 @@
 package com.wdd.cat.processor.post_processor;
 
 
-import com.wdd.cat.message.Message;
+import com.wdd.cat.message.child.NormalMessage;
+import com.wdd.cat.message.child.OutboundMessage;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class ObserveProcessor implements PostProcessor{
     }
 
     @Override
-    public List<Message> process(List<Message> in) {
+    public List<OutboundMessage> process(List<OutboundMessage> in) {
         return List.of();//消息回顾
     }
 }

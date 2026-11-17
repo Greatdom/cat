@@ -15,5 +15,6 @@ public class LinkerLogReader {
 
     //实现E:\程序代码\dsh\references\cat-legacy\cat\src\main\java\com\wdd\cat\logs\LinkerLogStore.java
     //废弃E:\程序代码\dsh\references\cat-legacy\cat\src\main\java\com\wdd\cat\logs\HostLogReader.java
+    //意图:只实现跳板的日志管理而不实现宿主的日志管理
 
 }

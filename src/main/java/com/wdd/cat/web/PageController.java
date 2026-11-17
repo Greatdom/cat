@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * &#064create: 2026-11-16 15:58
  **/
 @Controller
-@RequestMapping("/page")
+@RequestMapping("/api/page")
 public class PageController {
 
     //TODO 得到设置页

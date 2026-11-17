@@ -1,6 +1,7 @@
 package com.wdd.cat.processor.think_processer;
 
 
+import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.processor.Processor;
 
 /**
@@ -13,5 +14,5 @@ import com.wdd.cat.processor.Processor;
  * &#064create: 2026-11-16 12:16
  **/
 
-public interface ThinkProcessor extends Processor {
+public interface ThinkProcessor extends Processor<InboundMessage>  {
 }

@@ -25,7 +25,7 @@ public class InboundService {
 
     @Scheduled(fixedDelayString = "${cat.inbound_service.tick.ms:500}")
     void handle(){
-        //遍历具体的poller拉取信息后往inboundMessageCache追加信息
+        //遍历具体的poller拉取NormalMessage并转为InboundMessage后往inboundMessageCache追加信息
     }
 
 

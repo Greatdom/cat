@@ -1,6 +1,7 @@
 package com.wdd.cat.processor.pre_processor;
 
 
+import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.processor.Processor;
 
 /**
@@ -14,5 +15,5 @@ import com.wdd.cat.processor.Processor;
  * &#064create: 2026-11-15 22:54
  **/
 
-public interface PreProcessor extends Processor {
+public interface PreProcessor extends Processor<InboundMessage> {
 }

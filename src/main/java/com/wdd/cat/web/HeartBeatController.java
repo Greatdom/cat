@@ -21,7 +21,7 @@ public class HeartBeatController {
 
     @GetMapping("/heartbeat")
     public Result<?> heartBeat() {
-        return null;//TODO 跳板每隔一段时间汇报当前状态,包括跳板设置/日志/会话信息
+        return null;//TODO 跳板每隔一段时间汇报当前状态,包括跳板设置/日志/会话信息/渠道能力
     }
     @GetMapping("/health")
     public Result<?> health() {

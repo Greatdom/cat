@@ -1,6 +1,7 @@
 package com.wdd.cat.processor.post_processor;
 
 
+import com.wdd.cat.message.child.OutboundMessage;
 import com.wdd.cat.processor.Processor;
 
 /**
@@ -13,5 +14,5 @@ import com.wdd.cat.processor.Processor;
  * &#064create: 2026-11-16 12:14
  **/
 
-public interface PostProcessor extends Processor {
+public interface PostProcessor extends Processor<OutboundMessage> {
 }

@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/inbound_message")
 public class InboundMessageController {
 
-    //TODO 按具体会话注入一个缓存队列群以限流,每次被要求投递是每个队列只能吐出一个消息
+    //TODO 按跳板的具体会话注入一个缓存队列群以限流,每次被要求投递是每个队列只能吐出一个消息
 
-    //TODO投递接口
+    //TODO投递接口,投递类型是InboundMessage!
 
     //TODO ack接口
 

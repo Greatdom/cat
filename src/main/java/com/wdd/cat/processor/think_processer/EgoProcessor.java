@@ -1,7 +1,8 @@
 package com.wdd.cat.processor.think_processer;
 
 
-import com.wdd.cat.message.Message;
+import com.wdd.cat.message.child.InboundMessage;
+import com.wdd.cat.message.child.NormalMessage;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class EgoProcessor implements ThinkProcessor {
     }
 
     @Override
-    public List<Message> process(List<Message> in) {
+    public List<InboundMessage> process(List<InboundMessage> in) {
         return List.of(); //往Message插进EgoDecision
     }
 }

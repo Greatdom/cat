@@ -20,7 +20,7 @@ public class OutBoundService {
 
     @Scheduled(fixedDelayString = "${cat.inbound_service.tick.ms:500}")
     void handle(){
-        //遍历具体的sender,将缓存的消息按渠道送出去
+        //遍历具体的sender,将缓存OutboundMessage拆成NormalMessage并按渠道送出去
     }
 
 }

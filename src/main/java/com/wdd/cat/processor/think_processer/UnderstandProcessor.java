@@ -1,7 +1,8 @@
 package com.wdd.cat.processor.think_processer;
 
 
-import com.wdd.cat.message.Message;
+import com.wdd.cat.message.child.InboundMessage;
+import com.wdd.cat.message.child.NormalMessage;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class UnderstandProcessor implements ThinkProcessor{
     }
 
     @Override
-    public List<Message> process(List<Message> in) {
+    public List<InboundMessage> process(List<InboundMessage> in) {
         //理解：这条消息是什么（急不急、重不重要、对我好坏）,给Message塞进Assessment
         return List.of();
     }

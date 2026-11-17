@@ -1,7 +1,10 @@
 package com.wdd.cat.web;
 
 
+import com.wdd.cat.common.entity.Result;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -14,9 +17,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * &#064create: 2026-11-16 16:09
  **/
 @Component
-@RequestMapping("/date")
+@RequestMapping("/api/date")
+@Deprecated
 public class DateController {
 
-    //生成日程并返回ack
+    @PostMapping
+    public Result<?> add(Object o){
+        return null;
+        //TODO 生成日程并返回ack
+    }
 
 }

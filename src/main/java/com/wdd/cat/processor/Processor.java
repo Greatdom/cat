@@ -2,6 +2,7 @@ package com.wdd.cat.processor;
 
 
 import com.wdd.cat.message.Message;
+import com.wdd.cat.message.child.NormalMessage;
 
 import java.util.List;
 
@@ -15,8 +16,8 @@ import java.util.List;
  * &#064create: 2026-11-16 12:12
  **/
 
-public interface Processor {
+public interface Processor<T extends Message>  {
     String kind();
     int order();                    // 执行顺序,小的先执行
-    List<Message> process(List<Message> in); //处理器核心方法
+    List<T> process(List<T> in); //处理器核心方法
 }
