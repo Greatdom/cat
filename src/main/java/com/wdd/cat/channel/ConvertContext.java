@@ -1,46 +1,42 @@
 package com.wdd.cat.channel;
+
 import com.wdd.cat.common.enums.ChannelKind;
 
 import java.util.Set;
+
 /**
  * &#064program: cat
- * <p>
  * &#064description: 转换上下文：Convertor 判断「这条消息接不接收」的依据
- * <p>
  * &#064author: black-cat
- * <p>
  * &#064create: 2026-11-15 21:42
  **/
-
-
-
 public record ConvertContext(
         long archiveId,         // 哪个存档
         ChannelKind channel,    // 哪个渠道
         String selfAccount,     // 本存档的账号（"10000"）
-        Set<String> accountKeys // 所有存档已占用的账号，"qq:10000" 格式
+        Set<String> accountKeys // 所有存档已占用的账号，"external_qq:10000" 格式
 ) {
-    /** 是不是自己发的（自己发的不能当别人的消息）。 */
+
+    /** 是不是自己发的。 */
     public boolean isSelf(String senderId) {
-        // TODO selfAccount.equals(senderId)
-        return false;
+        return senderId != null && senderId.equals(selfAccount);
     }
 
-    /** 是不是另一个存档的号（避免存档之间互相串话）。 */
+    /** 是不是另一个存档的号。 */
     public boolean isAnotherArchive(String senderId) {
-        // TODO accountKeys 里有 key(channel, senderId) 且不等于自己
-        return false;
+        if (senderId == null || senderId.equals(selfAccount)) {
+            return false;
+        }
+        return accountKeys != null && accountKeys.contains(key(channel, senderId));
     }
 
-    /** 这条消息该不该丢掉 = isSelf || isAnotherArchive。 */
+    /** 该不该丢 = 自己发的 或 别的存档的号。 */
     public boolean shouldDrop(String senderId) {
-        // TODO return isSelf(senderId) || isAnotherArchive(senderId)
-        return false;
+        return isSelf(senderId) || isAnotherArchive(senderId);
     }
 
-    /** 拼账号键："qq:10000"。带渠道是为了跨渠道撞号。 */
+    /** 拼账号键："external_qq:10000"；必须和 ArchiveStore.allAccounts() 同格式。 */
     public static String key(ChannelKind kind, String account) {
-        // TODO return kind.name().toLowerCase() + ":" + account
-        return "";
+        return (kind.name() + ":" + account).toLowerCase();
     }
 }

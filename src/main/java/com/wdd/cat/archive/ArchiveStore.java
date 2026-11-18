@@ -170,6 +170,7 @@ public class ArchiveStore {
                 draft.memory() == null ? new Archive.Memory("long-short-term") : draft.memory(),
                 draft.session(),
                 draft.links() == null ? List.of() : draft.links(),
+                draft.contacts() == null ? List.of() : draft.contacts(),
                 draft.pipeline() == null ? PipelineConfig.defaultConfig() : draft.pipeline(),
                 now,
                 now
@@ -198,6 +199,7 @@ public class ArchiveStore {
                 draft.memory() == null ? old.memory() : draft.memory(),
                 draft.session() == null ? old.session() : draft.session(),
                 draft.links() == null ? old.links() : draft.links(),
+                draft.contacts() == null ? old.contacts() : draft.contacts(),
                 draft.pipeline() == null ? old.pipeline() : draft.pipeline(),
                 old.createdAt(),
                 Instant.now().toString()
@@ -236,7 +238,8 @@ public class ArchiveStore {
                 : new Archive.Session(s.sessionId(), status, s.title());
         Archive updated = new Archive(
                 old.version(), old.id(), old.name(), old.enabled(), old.memory(),
-                next, old.links(), old.pipeline(), old.createdAt(), Instant.now().toString()
+                next, old.links(), old.contacts(), old.pipeline(), old.createdAt(),
+                Instant.now().toString()
         );
         archives.put(id, updated);
         save(updated);

@@ -40,6 +40,7 @@ class ArchiveStoreTest {
                 "1", 0, name, true, null, null,
                 List.of(new Archive.Link(1L, ChannelKind.EXTERNAL_QQ, true, account,
                         "http://127.0.0.1:3000", "tok", null)),
+                List.of(new Archive.Contact(ChannelKind.EXTERNAL_QQ, "group", "20001", true)),
                 PipelineConfig.defaultConfig(), null, null
         );
     }
@@ -122,7 +123,7 @@ class ArchiveStoreTest {
         assertThat(before).isEqualTo(1);
 
         store.update(a.id(), new Archive("1", 0, "黑猫", false, null, null,
-                a.links(), PipelineConfig.defaultConfig(), null, null));
+                a.links(), a.contacts(), PipelineConfig.defaultConfig(), null, null));
         long after = store.enabled().stream().filter(x -> x.id() == a.id()).count();
         assertThat(after).isZero();
     }
@@ -137,7 +138,7 @@ class ArchiveStoreTest {
 
     @Test
     void registryReplaceAllThreeStates() {
-        ArchiveRegistry reg = new ArchiveRegistry();
+        ArchiveRegistry reg = new ArchiveRegistry(store);
         assertThat(reg.replaceAll(null)).isFalse();
 
         assertThat(reg.replaceAll(Map.of())).isTrue();
@@ -149,5 +150,16 @@ class ArchiveStoreTest {
         assertThat(reg.replaceAll(Map.of(1L, served))).isTrue();
         assertThat(reg.of(1L).orElseThrow().isBound()).isTrue();
         assertThat(reg.allChats()).containsExactly(key);
+    }
+
+    @Test
+    void registryDerivesFromStoreWhenNoReport() {
+        Archive a = create(draft("黑猫", "10000"));
+        ArchiveRegistry reg = new ArchiveRegistry(store);
+
+        assertThat(reg.of(a.id())).isPresent();
+        assertThat(reg.of(a.id()).orElseThrow().chats())
+                .contains(new com.wdd.cat.message.ChatKey(
+                        com.wdd.cat.message.ChatKey.ChatType.GROUP, "20001"));
     }
 }

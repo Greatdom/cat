@@ -25,7 +25,7 @@ class ArchivePersistenceTest {
         ArchiveStore first = new ArchiveStore(ids, json);
         String name = "持久化测试-" + System.nanoTime();
         Archive created = first.create(new Archive(
-                "1", 0, name, true, null, null, List.of(),
+                "1", 0, name, true, null, null, List.of(), List.of(),
                 PipelineConfig.defaultConfig(), null, null));
 
         Path file = Path.of(UnEditAbleDefaultConfig.DATA_DIR)

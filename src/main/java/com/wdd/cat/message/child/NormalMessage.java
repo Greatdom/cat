@@ -19,8 +19,7 @@ public class NormalMessage extends Message {
 
     /** 全部文本，给拼 Prompt 用。 */
     public String text() {
-        // TODO return Content.plainText(content)
-        return "";
+        return Content.plainText(content);
     }
 
     public Object getRaw() {
