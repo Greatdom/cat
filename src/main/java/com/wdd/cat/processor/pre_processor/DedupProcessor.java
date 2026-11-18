@@ -1,31 +1,29 @@
 package com.wdd.cat.processor.pre_processor;
 
-import com.wdd.cat.common.enums.ProcessorKind;
-import com.wdd.cat.message.child.InboundMessage;
-import com.wdd.cat.message.child.NormalMessage;
 import com.wdd.cat.common.cache.DeliveryState;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
+import com.wdd.cat.common.enums.ProcessorKind;
+import com.wdd.cat.message.ChatKey;
+import com.wdd.cat.message.child.InboundMessage;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * &#064program: cat
- * <p>
- * &#064description: 消息去重前处理器：比消息水位旧的、已经处理过的，全丢掉
- * <p>
+ * &#064description: 消息去重前处理器：已投递的、正在处理的、比水位旧的，全丢掉
  * &#064author: black-cat
- * <p>
  * &#064create: 2026-11-15 23:14
  **/
-
-
-
 @Component
 public class DedupProcessor implements PreProcessor {
 
-    @Autowired
-    private DeliveryState deliveryState;
+    private final DeliveryState deliveryState;
+
+    public DedupProcessor(DeliveryState deliveryState) {
+        this.deliveryState = deliveryState;
+    }
 
     @Override
     public ProcessorKind kind() {
@@ -39,11 +37,35 @@ public class DedupProcessor implements PreProcessor {
 
     @Override
     public List<InboundMessage> process(List<InboundMessage> in) {
-        // TODO in 为空直接返回 List.of()
-        // TODO 逐条过滤：
-        //      消息已经被处理过 : deliveryState.isProcessed(msg.archiveId(), msg.channelMessageId())  → 标记完最高水位后丢
-        //      消息在水位下 : msg.timestamp() < deliveryState.watermarkOrInit(msg.archiveId(), msg.chatKey()) → 直接丢
-        // TODO 剩下的原样返回
-        return in;
+        if (in == null || in.isEmpty()) {
+            return List.of();
+        }
+
+        long nowSeconds = System.currentTimeMillis() / 1000;
+        List<InboundMessage> out = new ArrayList<>(in.size());
+
+        for (InboundMessage msg : in) {
+            ChatKey chat = msg.chatKey();
+            if (chat == null) {
+                continue;
+            }
+
+            // ① 比水位旧的 = 历史消息，丢
+            long watermark = deliveryState.watermarkOrInit(msg.getArchiveId(), chat, nowSeconds);
+            if (msg.getTimestamp() / 1000 < watermark) {
+                continue;
+            }
+
+            // ② 已投递 / 正在处理且未超时 → 丢；否则标记为处理中
+            if (!deliveryState.tryAccept(msg)) {
+                continue;
+            }
+            out.add(msg);
+        }
+
+        if (!out.isEmpty()) {
+            deliveryState.save();
+        }
+        return out;
     }
 }

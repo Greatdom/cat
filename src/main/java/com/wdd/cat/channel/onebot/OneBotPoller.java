@@ -31,6 +31,9 @@ public class OneBotPoller implements ChannelPoller<JsonNode> {
     /** 每个账号上次拉取时间，用于控频。 */
     private final Map<String, Long> lastPollAt = new ConcurrentHashMap<>();
 
+    /** 每个会话最后拉到的消息号，避免重复拉取历史。 */
+    private final Map<String, String> cursor = new ConcurrentHashMap<>();
+
     private final OneBotConnectionPool pool;
 
     public OneBotPoller(OneBotConnectionPool pool) {
@@ -98,9 +101,37 @@ public class OneBotPoller implements ChannelPoller<JsonNode> {
         if (!messages.isArray()) {
             return List.of();
         }
+
+        // OneBot 没有「从某条之后拉」的接口，只能本地按消息号过滤已拉过的
+        String last = cursor.get(chat.wire());
+        long lastSeq = parseSeq(last);
+
         List<JsonNode> out = new ArrayList<>(messages.size());
-        messages.forEach(out::add);
-        log.debug("{} 拉到 {} 条", chat.wire(), out.size());
+        long maxSeq = lastSeq;
+        for (JsonNode m : messages) {
+            long seq = parseSeq(m.path("message_id").asString(""));
+            if (last != null && seq <= lastSeq) {
+                continue;
+            }
+            out.add(m);
+            maxSeq = Math.max(maxSeq, seq);
+        }
+        if (maxSeq > lastSeq) {
+            cursor.put(chat.wire(), Long.toString(maxSeq));
+        }
+        log.debug("{} 拉到 {} 条（新 {} 条）", chat.wire(), messages.size(), out.size());
         return out;
+    }
+
+    /** 消息号转数字；转不了返回 -1。 */
+    private static long parseSeq(String id) {
+        if (id == null || id.isBlank()) {
+            return -1L;
+        }
+        try {
+            return Long.parseLong(id.trim());
+        } catch (NumberFormatException e) {
+            return -1L;
+        }
     }
 }

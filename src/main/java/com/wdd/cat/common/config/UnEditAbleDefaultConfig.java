@@ -31,6 +31,9 @@ public class UnEditAbleDefaultConfig {
      */
     public static final int CAT_SCHEDULER_POOL_LIMIT = 10;
 
+    /** 消息标记为「处理中」后多久视为残留、放回重投（毫秒）。 */
+    public static final long PROCESSING_TIMEOUT_MS = 5 * 60 * 1000L;
+
     private UnEditAbleDefaultConfig() {
     }
 }

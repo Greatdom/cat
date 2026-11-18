@@ -1,10 +1,13 @@
 package com.wdd.cat.service;
 
-import com.wdd.cat.common.utils.CatScheduler;
 import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
+import com.wdd.cat.common.utils.CatScheduler;
+import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.processor.Processor;
 import com.wdd.cat.processor.pre_processor.PreProcessor;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -40,8 +43,24 @@ public class PreService {
         preProcessors.sort(Comparator.comparingInt(Processor::order));
     }
 
+    /** 缓存池 → 前处理链 → 待投递队列。 */
     void preprocess() {
-        // 第一个前处理器从 inboundService 的缓存池取信息，后一个拿前一个的结果继续加工，
-        // 最后一个把结果交给 TriggerService
+        List<InboundMessage> current = new ArrayList<>();
+        inboundService.drainTo(current);
+        if (current.isEmpty()) {
+            return;
+        }
+
+        for (PreProcessor p : preProcessors) {
+            List<InboundMessage> next = p.process(current);
+            current = next == null ? List.of() : next;
+            if (current.isEmpty()) {
+                return;
+            }
+        }
+
+        for (InboundMessage msg : current) {
+            //TODO 将消息给triggerService处理
+        }
     }
 }
