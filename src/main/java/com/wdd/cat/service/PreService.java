@@ -23,6 +23,8 @@ import java.util.List;
 @Component
 public class PreService {
 
+    private static final Logger log = LoggerFactory.getLogger(PreService.class);
+
     private final InboundService inboundService;
     private final TriggerService triggerService;
     private final List<PreProcessor> preProcessors;
@@ -43,24 +45,24 @@ public class PreService {
         preProcessors.sort(Comparator.comparingInt(Processor::order));
     }
 
-    /** 缓存池 → 前处理链 → 待投递队列。 */
+    /**
+     * 缓存池 → 前处理链 → TriggerService。
+     * <p>关键：即使没有新消息也要把整条链跑完。
+     * 有状态的处理器（如合并）靠每轮心跳吐出积压，提前返回会让积压永远出不来。
+     */
     void preprocess() {
         List<InboundMessage> current = new ArrayList<>();
         inboundService.drainTo(current);
-        if (current.isEmpty()) {
-            return;
-        }
 
         for (PreProcessor p : preProcessors) {
             List<InboundMessage> next = p.process(current);
             current = next == null ? List.of() : next;
-            if (current.isEmpty()) {
-                return;
-            }
         }
 
-        for (InboundMessage msg : current) {
-            //TODO 将消息给triggerService处理
+        if (current.isEmpty()) {
+            return;
         }
+        triggerService.trigger(current);
+        log.info("前处理通过 {} 条", current.size());
     }
 }

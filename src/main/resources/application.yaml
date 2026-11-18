@@ -1,3 +1,7 @@
 spring:
   application:
     name: cat
+
+logging:
+  level:
+    com.wdd.cat: DEBUG

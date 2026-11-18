@@ -1,37 +1,37 @@
 package com.wdd.cat.processor.pre_processor;
 
+import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
 import com.wdd.cat.common.enums.ProcessorKind;
+import com.wdd.cat.message.ChatKey;
+import com.wdd.cat.message.Content;
 import com.wdd.cat.message.child.InboundMessage;
-import com.wdd.cat.message.child.NormalMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * &#064program: cat
+ * &#064description: 合并消息：窗口内、最多 N 条合成一条
  * <p>
- * &#064description: 合并消息：T 秒窗口内、最多 N 条，会合并成一条
- * <p>
+ * 每条消息先在桶里躺够 MERGE_WINDOW_MS，再从队头按「相邻间隔不大于窗口」贪心合并。
  * &#064author: black-cat
- * <p>
  * &#064create: 2026-11-15 23:17
  **/
-
-
 @Component
 public class MergeProcessor implements PreProcessor {
 
-    //废弃E:\程序代码\dsh\references\cat-legacy\cat\src\main\java\com\wdd\cat\link\RateLimiter.java的业务
+    private static final Logger log = LoggerFactory.getLogger(MergeProcessor.class);
 
-    /** 攒批窗口，毫秒。 */
-//    private static final long WINDOW_MS = T;
-
-
-    /** 一次最多合并几条，超过就先合。 */
-//    private static final int MAX_MERGE = N;
-
-    //TODO 维护一群按"存档:渠道:具体聊天"分桶的内部queue
-    //XXX<Queue> queues;
+    /** 按会话分桶的待合并队列。 */
+    private final Map<ChatKey, Deque<InboundMessage>> buckets = new ConcurrentHashMap<>();
 
     @Override
     public ProcessorKind kind() {
@@ -43,15 +43,95 @@ public class MergeProcessor implements PreProcessor {
         return ProcessorKind.MERGE_PROCESSOR.getOrder();
     }
 
+
+    //TODO 以后对于不同的外部渠道会采取不同的消息合并策略,不仅对MergeProcessor,而且对大部分Processor
     @Override
     public List<InboundMessage> process(List<InboundMessage> in) {
-        // TODO  ChannelKind.ESP32 时原样返回，不合并
-        // TODO  将原始数据按时间戳顺序按"存档:渠道:具体聊天"分桶进入不同的内部queue
-        // TODO 每次process时以一个原始信息为单位取出时间戳至今已有Tms的消息进行合并
-        // TODO 已合并的原始消息丢弃
-        // TODO 用算法将消息链表进行合并成一条并重进链表,规则:
-        // TODO 一条合并后的消息包含能合并的按时间戳顺序排序的至多N条原始消息(包括在队列内的未处理的原始消息),相邻消息的时间间隔不大于Tms
-        //TODO 将合并后的消息链表返回
-        return in;
+        long now = System.currentTimeMillis();
+
+        // ① 按时间戳顺序入桶
+        if (in != null) {
+            for (InboundMessage msg : in) {
+                ChatKey chat = msg.chatKey();
+                if (chat == null) {
+                    continue;
+                }
+                Deque<InboundMessage> q =
+                        buckets.computeIfAbsent(chat, k -> new ArrayDeque<>());
+                synchronized (q) {
+                    q.addLast(msg);
+                    // 队列内保持时间戳升序
+                    if (q.size() > 1) {
+                        List<InboundMessage> sorted = new ArrayList<>(q);
+                        sorted.sort(Comparator.comparingLong(InboundMessage::getTimestamp));
+                        q.clear();
+                        q.addAll(sorted);
+                    }
+                }
+            }
+        }
+
+        // ② 从队头取「已躺够窗口」的消息合并
+        List<InboundMessage> out = new ArrayList<>();
+        for (Map.Entry<ChatKey, Deque<InboundMessage>> e : buckets.entrySet()) {
+            Deque<InboundMessage> q = e.getValue();
+            synchronized (q) {
+                while (!q.isEmpty()) {
+                    InboundMessage head = q.peekFirst();
+                    long waited = now - head.getTimestamp();
+                    if (waited < UnEditAbleDefaultConfig.MERGE_WINDOW_MS) {
+                        log.debug("桶 {} 头部只等了 {}ms，继续等", e.getKey().wire(), waited);
+                        break;   // 还没躺够，下一轮再取
+                    }
+                    out.add(drainOne(q, now));
+                }
+            }
+        }
+        return out;
+    }
+
+    /** 从队头取一组能合并的消息，合成一条。 */
+    private InboundMessage drainOne(Deque<InboundMessage> q, long now) {
+        InboundMessage first = q.pollFirst();
+        List<InboundMessage> group = new ArrayList<>(UnEditAbleDefaultConfig.MERGE_MAX_COUNT);
+        group.add(first);
+
+        while (!q.isEmpty() && group.size() < UnEditAbleDefaultConfig.MERGE_MAX_COUNT) {
+            InboundMessage next = q.peekFirst();
+            long gap = next.getTimestamp() - group.get(group.size() - 1).getTimestamp();
+            if (gap > UnEditAbleDefaultConfig.MERGE_WINDOW_MS) {
+                break;   // 断档，下一组
+            }
+            group.add(q.pollFirst());
+        }
+
+        if (group.size() == 1) {
+            return first;
+        }
+        InboundMessage merged = merge(group);
+        log.debug("合并 {} 条 → 1 条（{}）", group.size(), merged.chatKey().wire());
+        return merged;
+    }
+
+    /** 按最后一条的身份、时间、消息号，正文拼成 Multi。 */
+    private InboundMessage merge(List<InboundMessage> group) {
+        InboundMessage last = group.get(group.size() - 1);
+        List<Content> parts = new ArrayList<>(group.size());
+        for (InboundMessage m : group) {
+            Content c = m.getContent();
+            if (c != null) {
+                parts.add(c);
+            }
+        }
+        InboundMessage merged = new InboundMessage();
+        merged.setArchiveId(last.getArchiveId());
+        merged.setChannel(last.getChannel());
+        merged.setSource(last.getSource());
+        merged.setTimestamp(last.getTimestamp());
+        merged.setChannelMessageId(last.getChannelMessageId());
+        merged.setRaw(last.getRaw());
+        merged.setContent(parts.isEmpty() ? null
+                : parts.size() == 1 ? parts.get(0) : new Content.Multi(parts));
+        return merged;
     }
 }

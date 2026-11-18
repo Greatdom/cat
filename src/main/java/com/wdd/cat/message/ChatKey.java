@@ -1,6 +1,7 @@
 package com.wdd.cat.message;
 
 import com.wdd.cat.common.enums.ChannelKind;
+import org.jspecify.annotations.NonNull;
 
 /**
  * &#064program: cat
@@ -63,7 +64,23 @@ public record ChatKey(ChatType type, String id, ChannelKind channelKind, Boolean
         return type == ChatType.GROUP;
     }
 
+    /** enabled 是配置项，不参与会话身份比较。 */
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ChatKey other)) return false;
+        return channelKind == other.channelKind
+                && type == other.type
+                && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(channelKind, type, id);
+    }
+
+    @Override
+    @NonNull
     public String toString() {
         return wire();
     }
