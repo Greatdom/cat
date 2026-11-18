@@ -37,6 +37,6 @@ public record ConvertContext(
 
     /** 拼账号键："external_qq:10000"；必须和 ArchiveStore.allAccounts() 同格式。 */
     public static String key(ChannelKind kind, String account) {
-        return (kind.name() + ":" + account).toLowerCase();
+        return kind.wire() + ":" + account;
     }
 }

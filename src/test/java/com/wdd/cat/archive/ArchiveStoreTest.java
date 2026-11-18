@@ -40,7 +40,7 @@ class ArchiveStoreTest {
                 "1", 0, name, true, null, null,
                 List.of(new Archive.Link(1L, ChannelKind.EXTERNAL_QQ, true, account,
                         "http://127.0.0.1:3000", "tok", null)),
-                List.of(new Archive.Contact(ChannelKind.EXTERNAL_QQ, "group", "20001", true)),
+                List.of(new com.wdd.cat.message.ChatKey(com.wdd.cat.message.ChatKey.ChatType.GROUP, "20001", ChannelKind.EXTERNAL_QQ, true)),
                 PipelineConfig.defaultConfig(), null, null
         );
     }
@@ -145,10 +145,13 @@ class ArchiveStoreTest {
         assertThat(reg.served()).isEmpty();
 
         var key = new com.wdd.cat.message.ChatKey(
-                com.wdd.cat.message.ChatKey.ChatType.GROUP, "20001");
-        var served = new ArchiveRegistry.ServedArchive("s1", "BOUND", Set.of(key));
+                com.wdd.cat.message.ChatKey.ChatType.GROUP, "20001", ChannelKind.EXTERNAL_QQ, true);
+        Archive served = new Archive("1", 99L, "上报的", true,
+                null, new Archive.Session("s1", Archive.SessionStatus.BOUND, "t"),
+                List.of(), List.of(new com.wdd.cat.message.ChatKey(com.wdd.cat.message.ChatKey.ChatType.GROUP, "20001", ChannelKind.EXTERNAL_QQ, true)),
+                PipelineConfig.defaultConfig(), null, null);
         assertThat(reg.replaceAll(Map.of(1L, served))).isTrue();
-        assertThat(reg.of(1L).orElseThrow().isBound()).isTrue();
+        assertThat(reg.of(1L).orElseThrow().session().isBound()).isTrue();
         assertThat(reg.allChats()).containsExactly(key);
     }
 
@@ -158,8 +161,8 @@ class ArchiveStoreTest {
         ArchiveRegistry reg = new ArchiveRegistry(store);
 
         assertThat(reg.of(a.id())).isPresent();
-        assertThat(reg.of(a.id()).orElseThrow().chats())
+        assertThat(ArchiveRegistry.chatsOf(reg.of(a.id()).orElseThrow()))
                 .contains(new com.wdd.cat.message.ChatKey(
-                        com.wdd.cat.message.ChatKey.ChatType.GROUP, "20001"));
+                        com.wdd.cat.message.ChatKey.ChatType.GROUP, "20001", ChannelKind.EXTERNAL_QQ, true));
     }
 }

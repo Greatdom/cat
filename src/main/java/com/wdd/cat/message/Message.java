@@ -31,14 +31,15 @@ public abstract class Message {
         return source == null || source.sender() == null ? "" : source.sender().id();
     }
 
-    /** 消息名（"group:20001"）。 */
+    /** 会话标识；缺字段或渠道不是外部渠道时返回 null。 */
     public ChatKey chatKey() {
         ChatKey.ChatType type = ChatKey.ChatType.fromWire(chatType());
         String id = chatId();
-        if (type == null || id == null || id.isBlank()) {
+        if (type == null || id == null || id.isBlank() || channel == null
+                || channel.getFamily() != ChannelKind.ChannelFamily.EXTERNAL) {
             return null;
         }
-        return new ChatKey(type, id);
+        return new ChatKey(type, id, channel, Boolean.TRUE);
     }
 
     public long getArchiveId() {

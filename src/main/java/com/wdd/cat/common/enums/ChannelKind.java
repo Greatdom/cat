@@ -29,6 +29,24 @@ public enum ChannelKind {
         return family;
     }
 
+    /** 传输出小写，如 "external_qq"。 */
+    public String wire() {
+        return name().toLowerCase();
+    }
+
+    /** 大小写不敏感，未知返回 null。 */
+    public static ChannelKind fromWire(String s) {
+        if (s == null) {
+            return null;
+        }
+        String v = s.trim().toUpperCase();
+        for (ChannelKind k : values()) {
+            if (k.name().equals(v)) {
+                return k;
+            }
+        }
+        return null;
+    }
 
     public enum ChannelFamily {
         INTERNAL,   // 服务器自己产生的，不进 poller

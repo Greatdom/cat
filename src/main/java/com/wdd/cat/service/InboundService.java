@@ -94,9 +94,7 @@ public class InboundService {
     }
 
     private void pollOne(Archive archive, Archive.Link link, Set<String> accountKeys) throws Exception {
-        List<ChatKey> chats = archive.contactsOf(link.kind()).stream()
-                .map(Archive.Contact::chatKey)
-                .collect(Collectors.toList());
+        List<ChatKey> chats = archive.contactsOf(link.kind());
         if (chats.isEmpty()) {
             return;
         }

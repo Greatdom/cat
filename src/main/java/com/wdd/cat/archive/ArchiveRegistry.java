@@ -24,7 +24,7 @@ public class ArchiveRegistry {
     private final ArchiveStore archiveStore;
 
     /** 跳板上报的快照；null 表示还没收到过，回退到 ArchiveStore 推导。 */
-    private volatile Map<Long, ServedArchive> reported;
+    private volatile Map<Long, Archive> reported;
 
     public ArchiveRegistry(ArchiveStore archiveStore) {
         this.archiveStore = archiveStore;
@@ -41,7 +41,7 @@ public class ArchiveRegistry {
      *
      * @return 是否真的更新了
      */
-    public boolean replaceAll(Map<Long, ServedArchive> incoming) {
+    public boolean replaceAll(Map<Long, Archive> incoming) {
         if (incoming == null) {
             return false;
         }
@@ -49,58 +49,42 @@ public class ArchiveRegistry {
         return true;
     }
 
-    /** 从存档配置重新推导（跳板没上报时的兜底）。 */
+    /** 丢弃上报数据，回退到从 ArchiveStore 推导。 */
     public synchronized void rebuildFromStore() {
         reported = null;
     }
 
     /** 当前注册表。 */
-    public Map<Long, ServedArchive> served() {
-        Map<Long, ServedArchive> snapshot = reported;
+    public Map<Long, Archive> served() {
+        Map<Long, Archive> snapshot = reported;
         return snapshot != null ? snapshot : derive();
     }
 
-    public Optional<ServedArchive> of(long archiveId) {
+    public Optional<Archive> of(long archiveId) {
         return Optional.ofNullable(served().get(archiveId));
     }
 
     /** 所有存档涉及的全部会话。 */
     public Set<ChatKey> allChats() {
         Set<ChatKey> out = new HashSet<>();
-        for (ServedArchive s : served().values()) {
-            if (s.chats() != null) {
-                out.addAll(s.chats());
-            }
+        for (Archive a : served().values()) {
+            out.addAll(chatsOf(a));
         }
         return out;
     }
 
-    private Map<Long, ServedArchive> derive() {
-        return archiveStore.enabled().stream()
-                .collect(Collectors.toMap(
-                        Archive::id,
-                        a -> new ServedArchive(
-                                a.session() == null ? null : a.session().sessionId(),
-                                a.session() == null || a.session().status() == null
-                                        ? "LOST" : a.session().status().name(),
-                                a.contacts() == null ? Set.of()
-                                        : a.contacts().stream()
-                                                .filter(Archive.Contact::isEnabled)
-                                                .map(Archive.Contact::chatKey)
-                                                .collect(Collectors.toSet()))));
+    /** 一个存档负责的会话。 */
+    public static Set<ChatKey> chatsOf(Archive a) {
+        if (a == null || a.contacts() == null) {
+            return Set.of();
+        }
+        return a.contacts().stream()
+                .filter(ChatKey::isEnabled)
+                .collect(Collectors.toSet());
     }
 
-    /** 已在服务的存档。 */
-    public record ServedArchive(
-            String sessionId,
-            String sessionStatus,
-            Set<ChatKey> chats
-    ) {
-        /** 已绑定且会话 ID 非空。 */
-        public boolean isBound() {
-            return "BOUND".equalsIgnoreCase(sessionStatus)
-                    && sessionId != null
-                    && !sessionId.isBlank();
-        }
+    private Map<Long, Archive> derive() {
+        return archiveStore.enabled().stream()
+                .collect(Collectors.toMap(Archive::id, a -> a));
     }
 }

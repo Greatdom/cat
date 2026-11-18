@@ -1,5 +1,6 @@
 package com.wdd.cat.archive;
 
+import com.wdd.cat.channel.ConvertContext;
 import com.wdd.cat.common.config.EditAbleDefaultConfig;
 import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
 import com.wdd.cat.common.utils.JsonCodec;
@@ -130,7 +131,7 @@ public class ArchiveStore {
         return all().stream().filter(Archive::isEnabled).toList();
     }
 
-    /** 所有已占用的账号，"qq:10000" 格式（小写）。 */
+    /** 所有已占用的账号，"external_qq:10000" 格式。 */
     public Set<String> allAccounts() {
         Set<String> out = new HashSet<>();
         for (Archive a : archives.values()) {
@@ -139,7 +140,7 @@ public class ArchiveStore {
             }
             for (Archive.Link l : a.links()) {
                 if (l.account() != null && !l.account().isBlank()) {
-                    out.add((l.kind() + ":" + l.account()).toLowerCase());
+                    out.add(ConvertContext.key(l.kind(), l.account()));
                 }
             }
         }
