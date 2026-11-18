@@ -1,3 +1,8 @@
 spring:
   application:
     name: cat
+
+# 这里的值必须和 UnEditAbleDefaultConfig 里的常量保持一致
+cat:
+  tick:
+    ms: 500

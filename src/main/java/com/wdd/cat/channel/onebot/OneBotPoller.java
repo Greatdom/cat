@@ -1,5 +1,6 @@
 package com.wdd.cat.channel.onebot;
 
+import com.wdd.cat.archive.Archive;
 import com.wdd.cat.channel.ChannelPoller;
 import com.wdd.cat.channel.PollContext;
 import com.wdd.cat.common.config.EditAbleDefaultConfig;
@@ -31,6 +32,12 @@ public class OneBotPoller implements ChannelPoller<JsonNode> {
     /** 每个账号上次拉取时间，用于控频。 */
     private final Map<String, Long> lastPollAt = new ConcurrentHashMap<>();
 
+    private final OneBotConnectionPool pool;
+
+    public OneBotPoller(OneBotConnectionPool pool) {
+        this.pool = pool;
+    }
+
     @Override
     public ChannelKind kind() {
         return ChannelKind.EXTERNAL_QQ;
@@ -42,28 +49,41 @@ public class OneBotPoller implements ChannelPoller<JsonNode> {
     }
 
     /**
-     * 没有 client 无法拉取，固定抛异常。
-     * <p>实际调用请用 {@link #poll(OneBotClient, PollContext)}。
+     * 从连接池按 link 取 client 再拉。
+     * <p>link 由 {@link #poll(Archive.Link, PollContext)} 提供；直接用本方法会抛异常。
      */
     @Override
     public List<JsonNode> poll(PollContext context) throws PollException {
-        throw new PollException("OneBotPoller 需要 client，请用 poll(client, context)");
+        throw new PollException("OneBotPoller 需要 link 才能定位账号，请用 poll(link, context)");
     }
 
-    /** 用指定 client 拉一批。没到轮询间隔时返回空表。 */
-    public List<JsonNode> poll(OneBotClient client, PollContext context) throws PollException {
+    /** 按 link 从连接池取 client 拉一批。 */
+    public List<JsonNode> poll(Archive.Link link, PollContext context) throws PollException {
+        if (!due(context)) {
+            return List.of();
+        }
+        OneBotClient client = pool.forAccount(context.archiveId(), link);
+        return fetch(client, context);
+    }
+
+
+
+    /** 到轮询间隔了吗？到了就记下这次时间。 */
+    private boolean due(PollContext context) {
         String accountKey = context.archiveId() + ":" + context.account();
         long now = System.currentTimeMillis();
         Long last = lastPollAt.get(accountKey);
         if (last != null && now - last < suggestedPollIntervalMs()) {
-            return List.of();
+            return false;
         }
         lastPollAt.put(accountKey, now);
+        return true;
+    }
 
+    private List<JsonNode> fetch(OneBotClient client, PollContext context) throws PollException {
         if (context.chats() == null || context.chats().isEmpty()) {
             return List.of();
         }
-
         List<JsonNode> out = new ArrayList<>();
         try {
             for (ChatKey chat : context.chats()) {

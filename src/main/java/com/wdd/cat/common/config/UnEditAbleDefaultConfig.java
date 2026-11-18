@@ -14,6 +14,18 @@ public class UnEditAbleDefaultConfig {
     /** 存档数据根目录。 */
     public static final String DATA_DIR = "data";
 
+    /** 各 Service 的 @Scheduled 周期（毫秒）。 */
+    public static final long TICK_MS = 500;
+
+    /** 日程检查周期（毫秒）。 */
+    public static final long SCHEDULE_DATE_MS = 20_000;
+
+    /** 欲望检查周期（毫秒）。 */
+    public static final long SCHEDULE_DESIRE_MS = 1_800_000;
+
+    /** 一次拉多少条历史。 */
+    public static final int POLL_LIMIT = 20;
+
     private UnEditAbleDefaultConfig() {
     }
 }
