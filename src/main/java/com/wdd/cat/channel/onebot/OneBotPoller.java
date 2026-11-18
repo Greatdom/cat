@@ -1,6 +1,5 @@
 package com.wdd.cat.channel.onebot;
 
-import com.wdd.cat.archive.Archive;
 import com.wdd.cat.channel.ChannelPoller;
 import com.wdd.cat.channel.PollContext;
 import com.wdd.cat.common.config.EditAbleDefaultConfig;
@@ -48,25 +47,18 @@ public class OneBotPoller implements ChannelPoller<JsonNode> {
         return (int) EditAbleDefaultConfig.qqPollAndSendIntervalMs;
     }
 
-    /**
-     * 从连接池按 link 取 client 再拉。
-     * <p>link 由 {@link #poll(Archive.Link, PollContext)} 提供；直接用本方法会抛异常。
-     */
+    /** 按 context 里的 link 取 client 拉一批；没到轮询间隔返回空表。 */
     @Override
     public List<JsonNode> poll(PollContext context) throws PollException {
-        throw new PollException("OneBotPoller 需要 link 才能定位账号，请用 poll(link, context)");
-    }
-
-    /** 按 link 从连接池取 client 拉一批。 */
-    public List<JsonNode> poll(Archive.Link link, PollContext context) throws PollException {
+        if (context.link() == null) {
+            throw new PollException("PollContext 缺少 link，无法定位 OneBot 连接");
+        }
         if (!due(context)) {
             return List.of();
         }
-        OneBotClient client = pool.forAccount(context.archiveId(), link);
+        OneBotClient client = pool.forAccount(context.archiveId(), context.link());
         return fetch(client, context);
     }
-
-
 
     /** 到轮询间隔了吗？到了就记下这次时间。 */
     private boolean due(PollContext context) {

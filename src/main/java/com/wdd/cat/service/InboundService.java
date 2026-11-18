@@ -7,7 +7,7 @@ import com.wdd.cat.channel.ChannelRegistry;
 import com.wdd.cat.channel.ConvertContext;
 import com.wdd.cat.channel.InboundConvertor;
 import com.wdd.cat.channel.PollContext;
-import com.wdd.cat.channel.onebot.OneBotPoller;
+import com.wdd.cat.common.utils.CatScheduler;
 import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.exception.PollException;
@@ -16,7 +16,6 @@ import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.NormalMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -40,9 +39,11 @@ public class InboundService {
     private final ArchiveStore archiveStore;
     private final ChannelRegistry channelRegistry;
 
-    public InboundService(ArchiveStore archiveStore, ChannelRegistry channelRegistry) {
+    public InboundService(ArchiveStore archiveStore, ChannelRegistry channelRegistry,
+                          CatScheduler scheduler) {
         this.archiveStore = archiveStore;
         this.channelRegistry = channelRegistry;
+        scheduler.schedule("inbound.handle", UnEditAbleDefaultConfig.TICK_MS, this::handle);
     }
 
     /** 从缓存池取出全部（给 PreService 用）。 */
@@ -58,7 +59,6 @@ public class InboundService {
         return inboundMessageCache.size();
     }
 
-    @Scheduled(fixedDelayString = "${cat.tick.ms:500}")
     void handle() {
         Set<String> accountKeys = archiveStore.allAccounts();
 
@@ -97,7 +97,7 @@ public class InboundService {
         }
 
         PollContext pollCtx = new PollContext(
-                archive.id(), link.account(), Set.copyOf(chats), UnEditAbleDefaultConfig.POLL_LIMIT);
+                archive.id(), link, Set.copyOf(chats), UnEditAbleDefaultConfig.POLL_LIMIT);
         ConvertContext convCtx = new ConvertContext(
                 archive.id(), link.kind(), link.account(), accountKeys);
 
@@ -114,7 +114,7 @@ public class InboundService {
 
     /**
      * 按渠道分发到对应 poller，再交给配对的 convertor。
-     * <p>渠道自己决定要不要额外依赖（如 OneBot 用连接池），这里只做分发。
+     * <p>渠道需要的一切都在 link / pollCtx 里，这里不做渠道特判。
      */
     @SuppressWarnings("unchecked")
     private <T> List<NormalMessage> pollAndConvert(ChannelRegistry.InboundPair<?> pair,
@@ -125,9 +125,7 @@ public class InboundService {
         InboundConvertor<T> convertor = (InboundConvertor<T>) pair.convertor();
 
         List<T> raw = switch (link.kind()) {
-            case EXTERNAL_QQ -> poller instanceof OneBotPoller oneBot
-                    ? (List<T>) oneBot.poll(link, pollCtx)
-                    : poller.poll(pollCtx);
+            case EXTERNAL_QQ -> poller.poll(pollCtx);
             // 站内渠道没有外部来源，不会进入这里
             case INTERNAL_DATE, INTERNAL_DESIRE, ADD_DATE -> List.of();
         };

@@ -26,6 +26,11 @@ public class UnEditAbleDefaultConfig {
     /** 一次拉多少条历史。 */
     public static final int POLL_LIMIT = 20;
 
+    /**
+     * CatScheduler线程池的池子上限
+     */
+    public static final int CAT_SCHEDULER_POOL_LIMIT = 10;
+
     private UnEditAbleDefaultConfig() {
     }
 }
