@@ -14,7 +14,8 @@ public record ConvertContext(
         long archiveId,         // 哪个存档
         ChannelKind channel,    // 哪个渠道
         String selfAccount,     // 本存档的账号（"10000"）
-        Set<String> accountKeys // 所有存档已占用的账号，"external_qq:10000" 格式
+        Set<String> accountKeys,// 所有存档已占用的账号，"external_qq:10000" 格式
+        String sessionId        // 归哪个 DSH 会话；空表示没绑定
 ) {
 
     /** 是不是自己发的。 */

@@ -70,6 +70,7 @@ public class OneBotInboundConvertor implements InboundConvertor<JsonNode> {
         msg.setTimestamp(event.path("time").asLong(0) * 1000);
         msg.setContent(content);
         msg.setRaw(event);
+        msg.setSessionId(ctx.sessionId());
 
         String chatType;
         String chatId;

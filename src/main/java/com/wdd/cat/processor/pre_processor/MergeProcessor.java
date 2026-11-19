@@ -130,6 +130,7 @@ public class MergeProcessor implements PreProcessor {
         merged.setSource(last.getSource());
         merged.setTimestamp(last.getTimestamp());
         merged.setChannelMessageId(last.getChannelMessageId());
+        merged.setSessionId(last.getSessionId());
         merged.setRaw(last.getRaw());
         merged.setContent(parts.isEmpty() ? null
                 : parts.size() == 1 ? parts.get(0) : new Content.Multi(parts));

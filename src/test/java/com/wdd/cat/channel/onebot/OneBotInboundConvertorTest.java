@@ -21,7 +21,7 @@ class OneBotInboundConvertorTest {
 
     private ConvertContext ctx(String self) {
         return new ConvertContext(1L, ChannelKind.EXTERNAL_QQ, self,
-                Set.of("external_qq:10000", "external_qq:10004"));
+                Set.of("external_qq:10000", "external_qq:10004"), "dsh-sess-1");
     }
 
     private JsonNode event(String raw) {
@@ -48,6 +48,7 @@ class OneBotInboundConvertorTest {
         assertThat(m.getChannelMessageId()).isEqualTo("7");
         assertThat(m.getTimestamp()).isEqualTo(1794932985_000L);
         assertThat(m.getChannel()).isEqualTo(ChannelKind.EXTERNAL_QQ);
+        assertThat(m.getSessionId()).isEqualTo("dsh-sess-1");
     }
 
     @Test

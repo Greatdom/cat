@@ -50,6 +50,12 @@ public class DedupProcessor implements PreProcessor {
                 continue;
             }
 
+            // ⓪ 没有归属会话的消息送不出去，丢
+            String sessionId = msg.getSessionId();
+            if (sessionId == null || sessionId.isBlank()) {
+                continue;
+            }
+
             // ① 比水位旧的 = 历史消息，丢
             long watermark = deliveryState.watermarkOrInit(msg.getArchiveId(), chat, nowSeconds);
             if (msg.getTimestamp() / 1000 < watermark) {

@@ -15,6 +15,7 @@ public abstract class Message {
     private MessageSource source;       // 从哪来 + 谁发的
     private long timestamp;             // 消息时间戳（毫秒）
     private String channelMessageId;    // 渠道侧的消息 ID，去重用
+    private String sessionId;           // 归属的 DSH 会话 ID，决定进哪个投递桶
 
     /** 会话类型 "private" / "group"。 */
     public String chatType() {
@@ -80,5 +81,13 @@ public abstract class Message {
 
     public void setChannelMessageId(String channelMessageId) {
         this.channelMessageId = channelMessageId;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }

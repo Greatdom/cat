@@ -99,7 +99,8 @@ public class InboundService {
         PollContext pollCtx = new PollContext(
                 archive.id(), link, Set.copyOf(chats), UnEditAbleDefaultConfig.POLL_LIMIT);
         ConvertContext convCtx = new ConvertContext(
-                archive.id(), link.kind(), link.account(), accountKeys);
+                archive.id(), link.kind(), link.account(), accountKeys,
+                archive.session() == null ? null : archive.session().sessionId());
 
         List<NormalMessage> normal = pollAndConvert(pair, link, pollCtx, convCtx);
         if (normal.isEmpty()) {
@@ -140,6 +141,7 @@ public class InboundService {
         out.setSource(src.getSource());
         out.setTimestamp(src.getTimestamp());
         out.setChannelMessageId(src.getChannelMessageId());
+        out.setSessionId(src.getSessionId());
         out.setRaw(src.getRaw());
         out.setContent(src.getContent());
         return out;
