@@ -153,7 +153,7 @@ public class DeliveryState {
 
     // ── 状态推进 ──
 
-    /** 标记为已投递（跳板 ack 时调）。 */
+    /** 标记为已投递,也就是说如果上一条消息没处理完却丢失了,恰好这一条消息处理完了,上一条消息就不再允许被处理了*/
     public void markDelivered(long archiveId, String channelMessageId, long timeSeconds, ChatKey chat) {
         if (channelMessageId == null || channelMessageId.isBlank()) {
             return;
