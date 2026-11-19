@@ -246,23 +246,6 @@ public class ArchiveStore {
         save(updated);
     }
 
-    /** 改会话名（由跳板回填）。 */
-    public void updateSessionTitle(long id, String title) {
-        Archive old = archives.get(id);
-        if (old == null || old.session() == null) {
-            return;
-        }
-        Archive.Session s = old.session();
-        Archive.Session next = new Archive.Session(s.sessionId(), s.status(), title);
-        Archive updated = new Archive(
-                old.version(), old.id(), old.name(), old.enabled(), old.memory(),
-                next, old.links(), old.contacts(), old.pipeline(), old.createdAt(),
-                Instant.now().toString()
-        );
-        archives.put(id, updated);
-        save(updated);
-    }
-
     // ── 存档合法性校验 ──
 
     private void validate(Archive draft, long selfId) {

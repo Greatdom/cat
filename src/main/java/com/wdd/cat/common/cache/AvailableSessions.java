@@ -15,9 +15,8 @@ import java.util.*;
 @Component
 public class AvailableSessions {
 
-    /** 整体替换，读多写少。 */
-//    private volatile Set<String> sessionIds = Set.of();
-    HashMap<String,String> sessions = new HashMap<>();
+    /** 心跳整体替换 */
+    private volatile Map<String, String> sessions = Map.of();
 
     /** 还在不在清单里。 */
     public boolean contains(String sessionId) {
@@ -27,21 +26,28 @@ public class AvailableSessions {
         return sessions.containsKey(sessionId);
     }
 
+    /** 会话名，没报过返回 null。 */
+    public String title(String sessionId) {
+        return sessionId == null ? null : sessions.get(sessionId);
+    }
+
     /** 当前清单。 */
     public List<String> getSessionIds() {
         return List.copyOf(sessions.keySet());
     }
 
     /** 心跳到达时整体覆盖；空表等于清空。 */
-    public void replace(HashMap<String,String> incoming) {
-        sessions = new HashMap<>();
+    public void replace(Map<String, String> incoming) {
+        Map<String, String> next = new LinkedHashMap<>();
         if (incoming != null) {
-            for (String id : incoming.keySet()) {
+            for (Map.Entry<String, String> e : incoming.entrySet()) {
+                String id = e.getKey();
                 if (id != null && !id.isBlank()) {
-                    sessions.put(id.trim(), incoming.get(id));
+                    next.put(id.trim(), e.getValue());
                 }
             }
         }
+        sessions = Map.copyOf(next);
     }
 
     public int size() {
