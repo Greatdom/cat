@@ -35,7 +35,7 @@ public class InboundMessageController {
     }
 
     /** 按跳板给的会话列表，每个会话取队头一条；只 peek 不删，等 ack。 */
-    @PostMapping("/get")
+    @GetMapping("/get")
     public Result<InboundGetResponse> get(@RequestParam List<String> sessionIds) {
         List<InboundMessageDto> out = queues.peek(sessionIds).stream()
                 .map(InboundMessageDto::from)

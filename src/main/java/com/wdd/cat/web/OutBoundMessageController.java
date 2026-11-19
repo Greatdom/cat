@@ -1,8 +1,22 @@
 package com.wdd.cat.web;
 
-
+import com.wdd.cat.archive.Archive;
+import com.wdd.cat.archive.ArchiveStore;
+import com.wdd.cat.common.entity.Result;
+import com.wdd.cat.message.Content;
+import com.wdd.cat.message.MessageSource;
+import com.wdd.cat.message.child.NormalMessage;
+import com.wdd.cat.message.child.OutboundMessage;
+import com.wdd.cat.web.dto.OutboundMessageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * &#064program: cat
@@ -17,6 +31,90 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/outbound_message")
 public class OutBoundMessageController {
 
-    //TODO从跳板接收消息,返回ack信息,接收类型是OutboundMessage!
+    private static final Logger log = LoggerFactory.getLogger(OutBoundMessageController.class);
 
+    private final ArchiveStore archiveStore;
+
+    public OutBoundMessageController(ArchiveStore archiveStore) {
+        this.archiveStore = archiveStore;
+    }
+
+    /** 跳板把一轮回复推回来，转成 OutboundMessage 后走后处理链。 */
+    @PostMapping("/push")
+    public Result<?> push(@RequestBody OutboundMessageRequest req) {
+        if (req == null || req.messages() == null || req.messages().isEmpty()) {
+            return Result.ok();
+        }
+        long archiveId = parseArchiveId(req.archiveId());
+        Archive archive = archiveId < 0 ? null : archiveStore.find(archiveId).orElse(null);
+        if (archive == null) {
+            log.warn("推送的存档不存在：{}", req.archiveId());
+            return Result.fail("存档不存在：" + req.archiveId());
+        }
+
+        OutboundMessage out = toOutbound(archive, req);
+        if (out.getMessages().isEmpty()) {
+            return Result.ok();
+        }
+
+        //TODO 交给 PostService 跑后处理链，再由 OutBoundService 分发出去
+        log.info("存档 {} 推回 {} 条回复（会话 {}）",
+                archive.id(), out.getMessages().size(), req.sessionId());
+        return Result.ok();
+    }
+
+    /** 请求体 → 领域对象；chatType/chatId 留空时退回存档自己的会话。 */
+    private static OutboundMessage toOutbound(Archive archive, OutboundMessageRequest req) {
+        List<NormalMessage> messages = new ArrayList<>();
+        for (OutboundMessageRequest.Item item : req.messages()) {
+            if (item == null) {
+                continue;
+            }
+            String text = item.text();
+            if (text == null || text.isBlank()) {
+                continue;
+            }
+            NormalMessage m = new NormalMessage();
+            m.setArchiveId(archive.id());
+            m.setChannel(archive.links().isEmpty() ? null : archive.links().get(0).kind());
+            m.setTimestamp(System.currentTimeMillis());
+            m.setSessionId(req.sessionId());
+            m.setContent(Content.text(text));
+            m.setSource(source(archive, item));
+            messages.add(m);
+        }
+
+        OutboundMessage out = new OutboundMessage();
+        out.setArchiveId(archive.id());
+        out.setSessionId(req.sessionId());
+        out.setTimestamp(System.currentTimeMillis());
+        out.setMessages(messages);
+        return out;
+    }
+
+    /** 出站消息的来源：存档自己 + 目标会话。 */
+    private static MessageSource source(Archive archive, OutboundMessageRequest.Item item) {
+        String chatType = item.chatType() == null || item.chatType().isBlank()
+                ? null : item.chatType().trim();
+        String chatId = item.chatId() == null || item.chatId().isBlank()
+                ? null : item.chatId().trim();
+        return new MessageSource(
+                new MessageSource.Origin(
+                        archive.links().isEmpty() ? null : archive.links().get(0).kind(),
+                        chatType, chatId, null),
+                new MessageSource.Sender(
+                        archive.links().isEmpty() ? null : archive.links().get(0).account(),
+                        archive.name(), null, MessageSource.Sender.SenderKind.BOT));
+    }
+
+    private static long parseArchiveId(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return -1L;
+        }
+        try {
+            return Long.parseLong(raw.trim());
+        } catch (NumberFormatException e) {
+            return -1L;
+        }
+    }
 }

@@ -1,15 +1,16 @@
 package com.wdd.cat.web;
 
-
+import com.wdd.cat.archive.Archive;
+import com.wdd.cat.archive.ArchiveStore;
 import com.wdd.cat.common.entity.Result;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * &#064program: cat
  * <p>
- * &#064description: 存档Controller
+ * &#064description: 存档Controller（只读；增删改写留给存档管理页）
  * <p>
  * &#064author: black-cat
  * <p>
@@ -27,7 +28,7 @@ public class ArchiveController {
     /** 读一个存档。 */
     @GetMapping("/{id}")
     public Result<?> get(@PathVariable String id) {
-       return null;
+        return null;
     }
 
     /**
