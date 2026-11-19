@@ -31,6 +31,7 @@ public class SlimProcessor implements ThinkProcessor {
 
     @Override
     public List<InboundMessage> process(List<InboundMessage> in) {
-        return List.of();//TODO 消息瘦身以免消息过于臃肿
+        //TODO 瘦身：裁掉用不上的上下文字段
+        return in;
     }
 }

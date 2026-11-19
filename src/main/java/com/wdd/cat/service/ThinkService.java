@@ -1,5 +1,6 @@
 package com.wdd.cat.service;
 
+import com.wdd.cat.common.cache.InboundMessageControllerQueues;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.processor.Processor;
 import com.wdd.cat.processor.think_processer.ThinkProcessor;
@@ -27,9 +28,12 @@ public class ThinkService {
     private static final Logger log = LoggerFactory.getLogger(ThinkService.class);
 
     private final List<ThinkProcessor> thinkProcessors;
+    private final InboundMessageControllerQueues queues;
 
-    public ThinkService(List<ThinkProcessor> thinkProcessors) {
+    public ThinkService(List<ThinkProcessor> thinkProcessors,
+                        InboundMessageControllerQueues queues) {
         this.thinkProcessors = new ArrayList<>(thinkProcessors);
+        this.queues = queues;
     }
 
     @PostConstruct
@@ -38,17 +42,18 @@ public class ThinkService {
         thinkProcessors.sort(Comparator.comparingInt(Processor::order));
     }
 
-    /** 跑一遍思考链，结果交给 InboundMessageController。 */
+    /** 跑一遍思考链，结果送进 InboundMessageController 的队列。 */
     public void run(List<InboundMessage> messages) {
         List<InboundMessage> current = messages;
         for (ThinkProcessor p : thinkProcessors) {
             List<InboundMessage> next = p.process(current);
             current = next == null ? List.of() : next;
-            if (current.isEmpty()) {
-                return;
-            }
         }
-        // TODO 交给 InboundMessageController 的待投递队列
-        log.debug("思考链通过 {} 条", current.size());
+
+        if (current.isEmpty()) {
+            return;
+        }
+        queues.enqueueAll(current);
+        log.info("思考链通过 {} 条（待投递 {}）", current.size(), queues.size());
     }
 }

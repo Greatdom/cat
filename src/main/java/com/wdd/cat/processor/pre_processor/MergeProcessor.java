@@ -44,7 +44,8 @@ public class MergeProcessor implements PreProcessor {
     }
 
 
-    //TODO 以后对于不同的外部渠道会采取不同的消息合并策略,不仅对MergeProcessor,而且对大部分Processor
+    //TODO 以后考虑将UnderstandProcessor移动到DedupProcessor和MergeProcessor中间,先进行消息理解,再根据理解结果决定合并策略
+    // 例如,硬件的即时反馈会判定为很急,所以要立即合并或者不合并;社交软件消息可以先放一放再合并
     @Override
     public List<InboundMessage> process(List<InboundMessage> in) {
         long now = System.currentTimeMillis();

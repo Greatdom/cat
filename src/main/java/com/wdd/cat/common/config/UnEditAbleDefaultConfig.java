@@ -32,7 +32,7 @@ public class UnEditAbleDefaultConfig {
     public static final int CAT_SCHEDULER_POOL_LIMIT = 10;
 
     /** 消息标记为「处理中」后多久视为残留、放回重投（毫秒）。 */
-    public static final long PROCESSING_TIMEOUT_MS = 5 * 60 * 1000L;
+    public static final long PROCESSING_TIMEOUT_MS = UnEditAbleDefaultConfig.MERGE_WINDOW_MS + 10 * 1000L;
 
     /** 合并窗口：消息在队列里躺多久才取出合并（毫秒）。 */
 //    public static final long MERGE_WINDOW_MS = 10_000L;

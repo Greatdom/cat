@@ -31,6 +31,7 @@ public class EgoProcessor implements ThinkProcessor {
 
     @Override
     public List<InboundMessage> process(List<InboundMessage> in) {
-        return List.of(); //往Message插进EgoDecision
+        //TODO 裁决：塞进 egoDecision
+        return in;
     }
 }

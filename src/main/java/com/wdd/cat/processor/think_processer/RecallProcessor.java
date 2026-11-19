@@ -31,6 +31,7 @@ public class RecallProcessor implements ThinkProcessor {
 
     @Override
     public List<InboundMessage> process(List<InboundMessage> in) {
-        return List.of(); //往Message塞进RecallBundle
+        //TODO 回忆：塞进 recallBundle
+        return in;
     }
 }
