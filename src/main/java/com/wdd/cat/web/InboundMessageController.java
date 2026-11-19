@@ -9,12 +9,7 @@ import com.wdd.cat.web.dto.InboundGetResponse;
 import com.wdd.cat.web.dto.InboundMessageDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -39,10 +34,10 @@ public class InboundMessageController {
         this.deliveryState = deliveryState;
     }
 
-    /** 每个会话桶只吐一条；只 peek 不删，等 ack。 */
-    @GetMapping("/get")
-    public Result<InboundGetResponse> get(@RequestParam(defaultValue = "10") int limit) {
-        List<InboundMessageDto> out = queues.peek(limit).stream()
+    /** 按跳板给的会话列表，每个会话取队头一条；只 peek 不删，等 ack。 */
+    @PostMapping("/get")
+    public Result<InboundGetResponse> get(@RequestParam List<String> sessionIds) {
+        List<InboundMessageDto> out = queues.peek(sessionIds).stream()
                 .map(InboundMessageDto::from)
                 .toList();
         return Result.ok(new InboundGetResponse(out));

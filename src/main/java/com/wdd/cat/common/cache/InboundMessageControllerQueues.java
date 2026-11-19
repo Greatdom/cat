@@ -4,6 +4,7 @@ import com.wdd.cat.message.child.InboundMessage;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -43,14 +44,23 @@ public class InboundMessageControllerQueues {
     }
 
     /**
-     * 取一批：每个桶只看队头一条，凑够 limit 就停。
+     * 按给定的会话列表取一批：每个会话只取队头一条。
      * <p><b>只 peek 不 poll</b>——跳板 ack 之后才真正删掉。
+     *
+     * @param sessionIds 跳板这次能处理的会话；空表示什么都不取
      */
-    public List<InboundMessage> peek(int limit) {
+    public List<InboundMessage> peek(List<String> sessionIds) {
         List<InboundMessage> out = new ArrayList<>();
-        for (Queue<InboundMessage> q : buckets.values()) {
-            if (out.size() >= limit) {
-                break;
+        if (sessionIds == null || sessionIds.isEmpty()) {
+            return out;
+        }
+        for (String sessionId : sessionIds) {
+            if (sessionId == null || sessionId.isBlank()) {
+                continue;
+            }
+            Queue<InboundMessage> q = buckets.get(sessionId);
+            if (q == null) {
+                continue;
             }
             InboundMessage m = q.peek();
             if (m != null) {
@@ -58,6 +68,12 @@ public class InboundMessageControllerQueues {
             }
         }
         return out;
+    }
+
+    /** 某个会话当前有没有积压，排障用。 */
+    public boolean hasPending(String sessionId) {
+        Queue<InboundMessage> q = sessionId == null ? null : buckets.get(sessionId);
+        return q != null && !q.isEmpty();
     }
 
     /** ack：从对应桶里删掉这条。 */

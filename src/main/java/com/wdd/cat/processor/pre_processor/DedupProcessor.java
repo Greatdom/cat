@@ -1,5 +1,6 @@
 package com.wdd.cat.processor.pre_processor;
 
+import com.wdd.cat.common.cache.AvailableSessions;
 import com.wdd.cat.common.cache.DeliveryState;
 import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
 import com.wdd.cat.common.enums.ProcessorKind;
@@ -12,7 +13,7 @@ import java.util.List;
 
 /**
  * &#064program: cat
- * &#064description: 消息去重前处理器：已投递的、正在处理的、比水位旧的，全丢掉
+ * &#064description: 消息去重前处理器：会话不可用、已投递、正在处理、比水位旧的，全丢掉
  * &#064author: black-cat
  * &#064create: 2026-11-15 23:14
  **/
@@ -20,9 +21,11 @@ import java.util.List;
 public class DedupProcessor implements PreProcessor {
 
     private final DeliveryState deliveryState;
+    private final AvailableSessions availableSessions;
 
-    public DedupProcessor(DeliveryState deliveryState) {
+    public DedupProcessor(DeliveryState deliveryState, AvailableSessions availableSessions) {
         this.deliveryState = deliveryState;
+        this.availableSessions = availableSessions;
     }
 
     @Override
@@ -50,9 +53,12 @@ public class DedupProcessor implements PreProcessor {
                 continue;
             }
 
-            // ⓪ 没有归属会话的消息送不出去，丢
+            // ⓪ 没有归属会话、或会话不在可用清单里 → 送不出去，丢
             String sessionId = msg.getSessionId();
             if (sessionId == null || sessionId.isBlank()) {
+                continue;
+            }
+            if (!availableSessions.contains(sessionId)) {
                 continue;
             }
 
