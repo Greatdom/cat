@@ -33,7 +33,7 @@ public class HeartBeatController {
     @PostMapping("/heartbeat")
     public Result<?> heartBeat(@RequestBody(required = false) HeartBeatRequest req) {
         //TODO 第一版:报上来的会话清单整体覆盖服务端记录
-        availableSessions.replace(req == null ? null : req.sessionIds());
+        availableSessions.replace(req == null ? null : req.sessions());
         log.debug("心跳：可用会话 {} 个", availableSessions.size());
         return Result.ok();
     }

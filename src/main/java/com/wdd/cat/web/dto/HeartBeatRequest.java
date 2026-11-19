@@ -1,6 +1,7 @@
 package com.wdd.cat.web.dto;
 
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -14,5 +15,5 @@ import java.util.List;
  **/
 
 public record HeartBeatRequest(
-    List<String> sessionIds
+    HashMap<String,String> sessions
 ){}

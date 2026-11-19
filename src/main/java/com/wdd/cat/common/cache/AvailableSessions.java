@@ -2,9 +2,7 @@ package com.wdd.cat.common.cache;
 
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * &#064program: cat
@@ -18,36 +16,36 @@ import java.util.Set;
 public class AvailableSessions {
 
     /** 整体替换，读多写少。 */
-    private volatile Set<String> sessionIds = Set.of();
+//    private volatile Set<String> sessionIds = Set.of();
+    HashMap<String,String> sessions = new HashMap<>();
 
     /** 还在不在清单里。 */
     public boolean contains(String sessionId) {
         if (sessionId == null || sessionId.isBlank()) {
             return false;
         }
-        return sessionIds.contains(sessionId);
+        return sessions.containsKey(sessionId);
     }
 
     /** 当前清单。 */
     public List<String> getSessionIds() {
-        return List.copyOf(sessionIds);
+        return List.copyOf(sessions.keySet());
     }
 
     /** 心跳到达时整体覆盖；空表等于清空。 */
-    public void replace(List<String> incoming) {
-        Set<String> next = new LinkedHashSet<>();
+    public void replace(HashMap<String,String> incoming) {
+        sessions = new HashMap<>();
         if (incoming != null) {
-            for (String id : incoming) {
+            for (String id : incoming.keySet()) {
                 if (id != null && !id.isBlank()) {
-                    next.add(id.trim());
+                    sessions.put(id.trim(), incoming.get(id));
                 }
             }
         }
-        sessionIds = Set.copyOf(next);
     }
 
     public int size() {
-        return sessionIds.size();
+        return sessions.size();
     }
 
     //长期计划:心跳到达后追加而不是覆盖

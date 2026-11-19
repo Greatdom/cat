@@ -8,6 +8,7 @@ import com.wdd.cat.message.MessageSource;
 import com.wdd.cat.message.child.NormalMessage;
 import com.wdd.cat.message.child.OutboundMessage;
 import com.wdd.cat.web.dto.OutboundMessageRequest;
+import com.wdd.cat.web.dto.OutboundMessageResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,11 +40,14 @@ public class OutBoundMessageController {
         this.archiveStore = archiveStore;
     }
 
-    /** 跳板把一轮回复推回来，转成 OutboundMessage 后走后处理链。 */
+    /**
+     * 跳板把一轮回复推回来，转成 OutboundMessage 后走后处理链。
+     * <p>返回 ack：跳板只有在收到 ack 之后才清掉自己对应的出站缓存。
+     */
     @PostMapping("/push")
-    public Result<?> push(@RequestBody OutboundMessageRequest req) {
+    public Result<OutboundMessageResponse> push(@RequestBody OutboundMessageRequest req) {
         if (req == null || req.messages() == null || req.messages().isEmpty()) {
-            return Result.ok();
+            return Result.ok(new OutboundMessageResponse(List.of()));
         }
         long archiveId = parseArchiveId(req.archiveId());
         Archive archive = archiveId < 0 ? null : archiveStore.find(archiveId).orElse(null);
@@ -54,13 +58,30 @@ public class OutBoundMessageController {
 
         OutboundMessage out = toOutbound(archive, req);
         if (out.getMessages().isEmpty()) {
-            return Result.ok();
+            return Result.ok(new OutboundMessageResponse(List.of()));
         }
 
         //TODO 交给 PostService 跑后处理链，再由 OutBoundService 分发出去
         log.info("存档 {} 推回 {} 条回复（会话 {}）",
                 archive.id(), out.getMessages().size(), req.sessionId());
-        return Result.ok();
+
+        return Result.ok(new OutboundMessageResponse(ackItems(archive, req)));
+    }
+
+    /** 一条回复都没被接受时不 ack，跳板留着下一轮重推。 */
+    private static List<OutboundMessageResponse.Item> ackItems(Archive archive,
+                                                               OutboundMessageRequest req) {
+        List<OutboundMessageResponse.Item> items = new ArrayList<>();
+        List<OutboundMessageRequest.Item> in = req.messages();
+        for (int i = 0; i < in.size(); i++) {
+            OutboundMessageRequest.Item item = in.get(i);
+            if (item == null || item.text() == null || item.text().isBlank()) {
+                continue;
+            }
+            items.add(new OutboundMessageResponse.Item(
+                    Long.toString(archive.id()), req.sessionId(), i, item.text()));
+        }
+        return items;
     }
 
     /** 请求体 → 领域对象；chatType/chatId 留空时退回存档自己的会话。 */
