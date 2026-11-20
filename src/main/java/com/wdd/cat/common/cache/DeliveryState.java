@@ -93,7 +93,7 @@ public class DeliveryState {
     public boolean isProcessingAlive(long archiveId, String channelMessageId, long now) {
         Entry e = get(archiveId, channelMessageId);
         return e != null && e.status() == Status.PROCESSING
-                && now - e.updatedAt() < UnEditAbleDefaultConfig.PROCESSING_TIMEOUT_MS;
+                && now - e.updatedAt() < UnEditAbleDefaultConfig.processingTimeoutMs();
     }
 
     /**

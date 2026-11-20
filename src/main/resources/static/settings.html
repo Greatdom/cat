@@ -1,11 +1,309 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cat 设置</title>
+<style>
+  :root {
+    --bg:#f7f8fa; --panel:#fff; --fg:#1f2328; --dim:#6b7280; --faint:#9ca3af;
+    --line:#e2e5ea; --accent:#2f6fed; --accent-fg:#fff; --warn:#b45309;
+    --ok:#1a7f37; --bad:#c0392b; --hover:#f0f3f8; --shadow:0 1px 2px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f1115; --panel:#161a20; --fg:#e6edf3; --dim:#8b949e; --faint:#6e7681;
+            --line:#2a3038; --accent:#58a6ff; --accent-fg:#0f1115; --warn:#d29922;
+            --ok:#3fb950; --bad:#f85149; --hover:#1e242c; --shadow:none; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif; }
+
+  header {
+    position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:12px;
+    padding:10px 20px; background:var(--panel); border-bottom:1px solid var(--line);
+    box-shadow:var(--shadow);
+  }
+  header h1 { font-size:15px; margin:0; font-weight:600; }
+  header .sep { color:var(--line); }
+  header .links a { color:var(--dim); text-decoration:none; font-size:13px; padding:4px 8px;
+                    border-radius:6px; }
+  header .links a:hover { background:var(--hover); color:var(--fg); }
+  header .links a.current { color:var(--accent); font-weight:600; }
+  header .grow { flex:1; }
+
+  main { max-width:920px; margin:0 auto; padding:20px 20px 80px; }
+
+  .group { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+           margin-bottom:16px; overflow:hidden; box-shadow:var(--shadow); }
+  .group > .head { padding:14px 18px 10px; border-bottom:1px solid var(--line); }
+  .group > .head h2 { font-size:14px; margin:0 0 2px; font-weight:600; }
+  .group > .head p { margin:0; font-size:12px; color:var(--dim); }
+
+  .item { display:flex; align-items:flex-start; gap:16px; padding:12px 18px;
+          border-bottom:1px solid var(--line); }
+  .item:last-child { border-bottom:none; }
+  .item:hover { background:var(--hover); }
+  .item .info { flex:1; min-width:0; }
+  .item .info .name { font-size:13.5px; font-weight:500; display:flex;
+                      align-items:center; gap:6px; flex-wrap:wrap; }
+  .item .info .key { font-size:11.5px; color:var(--faint);
+                     font-family:ui-monospace,Consolas,monospace; margin-top:1px; }
+  .item .info .hint { font-size:12px; color:var(--dim); margin-top:3px; }
+  .item .ctrl { flex:0 0 auto; display:flex; align-items:center; gap:8px; padding-top:2px; }
+  .item.changed { background:rgba(47,111,237,.06); }
+  .item.changed .name::after {
+    content:'已改动'; font-size:10.5px; color:var(--accent); border:1px solid var(--accent);
+    border-radius:4px; padding:0 4px; font-weight:400;
+  }
+
+  input[type=text], input[type=number] {
+    font:inherit; color:inherit; background:var(--panel); border:1px solid var(--line);
+    border-radius:7px; padding:5px 9px; width:130px; text-align:right;
+  }
+  input:focus { outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent; }
+  .unit { font-size:12px; color:var(--dim); min-width:34px; }
+
+  .badge { font-size:11px; border-radius:5px; padding:1px 6px; border:1px solid var(--warn);
+           color:var(--warn); white-space:nowrap; }
+
+  .actions { position:fixed; left:0; right:0; bottom:0; background:var(--panel);
+             border-top:1px solid var(--line); padding:10px 20px; display:flex;
+             align-items:center; gap:10px; box-shadow:0 -1px 3px rgba(0,0,0,.06); z-index:10; }
+  .actions .status { font-size:12.5px; color:var(--dim); }
+  .actions .status.ok { color:var(--ok); }
+  .actions .status.err { color:var(--bad); }
+  .actions .grow { flex:1; }
+
+  button { font:inherit; cursor:pointer; border:1px solid var(--line); border-radius:7px;
+           padding:6px 16px; background:var(--panel); color:var(--fg); }
+  button:hover { background:var(--hover); }
+  button.primary { background:var(--accent); border-color:var(--accent); color:var(--accent-fg); }
+  button.primary:hover { filter:brightness(1.06); }
+  button:disabled { opacity:.45; cursor:default; }
+  button.link { border:none; background:none; color:var(--dim); padding:4px 8px; font-size:12px; }
+  button.link:hover { color:var(--fg); background:var(--hover); }
+
+  .toast { position:fixed; bottom:64px; left:50%; transform:translateX(-50%);
+           background:var(--fg); color:var(--bg); padding:8px 16px; border-radius:8px;
+           font-size:13px; opacity:0; transition:.2s; pointer-events:none; z-index:20; }
+  .toast.show { opacity:1; }
+  .toast.bad { background:var(--bad); color:#fff; }
+</style>
 </head>
 <body>
 
+<header>
+  <h1>cat 设置</h1>
+  <span class="sep">|</span>
+  <span class="links">
+    <a href="/settings" class="current">设置</a>
+    <a href="/archives">存档</a>
+    <a href="/logs">日志</a>
+  </span>
+  <span class="grow"></span>
+  <span class="status" id="conn" style="font-size:12px;color:var(--dim)"></span>
+  <button class="link" id="reload">重新读取</button>
+</header>
+
+<main>
+  <div id="sections"></div>
+</main>
+
+<div class="actions">
+  <button class="primary" id="save">保存</button>
+  <button id="discard">撤销改动</button>
+  <button class="link" id="resetAll">全部恢复默认</button>
+  <span class="status" id="status"></span>
+  <span class="grow"></span>
+  <span class="status" id="summary"></span>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id)
+let state = null
+const pending = {}          // key -> 新值
+
+function toast(msg, bad) {
+  const el = $('toast')
+  el.textContent = msg
+  el.className = 'toast show' + (bad ? ' bad' : '')
+  setTimeout(() => { el.className = 'toast' }, 1800)
+}
+
+function setStatus(text, kind) {
+  const el = $('status')
+  el.textContent = text || ''
+  el.className = 'status' + (kind ? ' ' + kind : '')
+}
+
+async function load() {
+  try {
+    const res = await fetch('/api/settings', { cache: 'no-store' })
+    const body = await res.json()
+    if (!body.success) throw new Error(body.message || '读取失败')
+    state = body.data
+    render()
+    setStatus('已读取', 'ok')
+    $('conn').textContent = '连接正常'
+  } catch (e) {
+    $('conn').textContent = '连不上 Java 服务'
+    setStatus('读取失败：' + e.message, 'err')
+  }
+}
+
+function render() {
+  const box = $('sections')
+  box.textContent = ''
+
+  for (const group of state.groups) {
+    const card = document.createElement('div')
+    card.className = 'group'
+
+    const head = document.createElement('div')
+    head.className = 'head'
+    const h2 = document.createElement('h2')
+    h2.textContent = group.title
+    const p = document.createElement('p')
+    p.textContent = group.description || ''
+    head.append(h2, p)
+    card.appendChild(head)
+
+    for (const item of group.items) {
+      card.appendChild(renderItem(item))
+    }
+    box.appendChild(card)
+  }
+  updateSummary()
+}
+
+function currentValue(key) {
+  return Object.prototype.hasOwnProperty.call(pending, key) ? pending[key] : state.values[key]
+}
+
+function renderItem(item) {
+  const key = item.key
+  const value = currentValue(key)
+  const changed = Object.prototype.hasOwnProperty.call(pending, key)
+
+  const row = document.createElement('div')
+  row.className = 'item' + (changed ? ' changed' : '')
+
+  const info = document.createElement('div')
+  info.className = 'info'
+
+  const name = document.createElement('div')
+  name.className = 'name'
+  name.textContent = item.label || key
+  if (item.needsRestart) {
+    const badge = document.createElement('span')
+    badge.className = 'badge'
+    badge.textContent = '改完需重启'
+    name.appendChild(badge)
+  }
+
+  const keyEl = document.createElement('div')
+  keyEl.className = 'key'
+  keyEl.textContent = key
+
+  info.append(name, keyEl)
+
+  if (item.hint) {
+    const hint = document.createElement('div')
+    hint.className = 'hint'
+    hint.textContent = item.hint
+    info.appendChild(hint)
+  }
+
+  const ctrl = document.createElement('div')
+  ctrl.className = 'ctrl'
+
+  const input = document.createElement('input')
+  input.type = 'number'
+  input.value = String(value)
+  input.min = String(item.min)
+  input.max = String(item.max)
+  input.addEventListener('input', () => {
+    const n = Number(input.value)
+    if (Number.isFinite(n)) {
+      pending[key] = n
+      updateSummary()
+    }
+  })
+  ctrl.appendChild(input)
+
+  if (item.unit) {
+    const u = document.createElement('span')
+    u.className = 'unit'
+    u.textContent = item.unit
+    ctrl.appendChild(u)
+  }
+
+  row.append(info, ctrl)
+  return row
+}
+
+function updateSummary() {
+  const n = Object.keys(pending).length
+  $('summary').textContent = n ? `${n} 项待保存` : ''
+  setStatus(n ? '有未保存的改动' : '')
+}
+
+async function save() {
+  const body = { ...pending }
+  if (Object.keys(body).length === 0) { toast('没有改动'); return }
+
+  $('save').disabled = true
+  try {
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const data = await res.json()
+    if (!data.success) { toast(data.message || '保存失败', true); return }
+    for (const k of Object.keys(pending)) delete pending[k]
+    await load()
+    toast(`已保存 ${data.data.changed} 项`)
+  } catch (e) {
+    toast('保存失败：' + e.message, true)
+  } finally {
+    $('save').disabled = false
+  }
+}
+
+function discard() {
+  for (const k of Object.keys(pending)) delete pending[k]
+  render()
+  setStatus('已撤销改动')
+}
+
+async function resetAll() {
+  if (!confirm('全部恢复默认值？')) return
+  try {
+    const res = await fetch('/api/settings', { method: 'DELETE' })
+    const data = await res.json()
+    if (!data.success) { toast(data.message || '恢复失败', true); return }
+    for (const k of Object.keys(pending)) delete pending[k]
+    state = data.data
+    render()
+    toast('已全部恢复默认')
+  } catch (e) {
+    toast('恢复失败：' + e.message, true)
+  }
+}
+
+$('save').addEventListener('click', save)
+$('discard').addEventListener('click', discard)
+$('resetAll').addEventListener('click', resetAll)
+$('reload').addEventListener('click', () => {
+  for (const k of Object.keys(pending)) delete pending[k]
+  load()
+})
+
+load()
+</script>
 </body>
 </html>

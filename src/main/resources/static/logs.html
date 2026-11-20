@@ -1,11 +1,214 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cat 日志</title>
+<style>
+  :root {
+    --bg:#f7f8fa; --panel:#fff; --fg:#1f2328; --dim:#6b7280; --faint:#9ca3af;
+    --line:#e2e5ea; --accent:#2f6fed; --accent-fg:#fff; --warn:#b45309;
+    --ok:#1a7f37; --bad:#c0392b; --hover:#f0f3f8; --shadow:0 1px 2px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f1115; --panel:#161a20; --fg:#e6edf3; --dim:#8b949e; --faint:#6e7681;
+            --line:#2a3038; --accent:#58a6ff; --accent-fg:#0f1115; --warn:#d29922;
+            --ok:#3fb950; --bad:#f85149; --hover:#1e242c; --shadow:none; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif; }
+
+  header {
+    position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:10px;
+    padding:10px 20px; background:var(--panel); border-bottom:1px solid var(--line);
+    box-shadow:var(--shadow); flex-wrap:wrap;
+  }
+  header h1 { font-size:15px; margin:0; font-weight:600; }
+  header .sep { color:var(--line); }
+  header .links a { color:var(--dim); text-decoration:none; font-size:13px; padding:4px 8px;
+                    border-radius:6px; }
+  header .links a:hover { background:var(--hover); color:var(--fg); }
+  header .links a.current { color:var(--accent); font-weight:600; }
+  header .grow { flex:1; }
+
+  select, input[type=text] {
+    font:inherit; color:inherit; background:var(--panel); border:1px solid var(--line);
+    border-radius:7px; padding:5px 9px;
+  }
+  select:focus, input:focus { outline:2px solid var(--accent); outline-offset:-1px; }
+
+  button { font:inherit; cursor:pointer; border:1px solid var(--line); border-radius:7px;
+           padding:6px 14px; background:var(--panel); color:var(--fg); }
+  button:hover { background:var(--hover); }
+  button.primary { background:var(--accent); border-color:var(--accent); color:var(--accent-fg); }
+  button.link { border:none; background:none; color:var(--dim); padding:4px 8px; font-size:12px; }
+  button.link:hover { color:var(--fg); background:var(--hover); }
+
+  main { max-width:1200px; margin:0 auto; padding:16px 20px 60px; }
+
+  .summary { display:flex; gap:16px; font-size:12px; color:var(--dim); margin-bottom:10px;
+             flex-wrap:wrap; }
+  .summary b { color:var(--fg); font-weight:600; }
+
+  .logs { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+          overflow:hidden; box-shadow:var(--shadow);
+          font-family:ui-monospace,Consolas,"Cascadia Mono",monospace; font-size:12.5px; }
+  .line { display:flex; gap:10px; padding:3px 14px; border-bottom:1px solid var(--line);
+          align-items:baseline; }
+  .line:last-child { border-bottom:none; }
+  .line:hover { background:var(--hover); }
+  .line .t { flex:0 0 74px; color:var(--faint); }
+  .line .lv { flex:0 0 48px; font-weight:600; }
+  .line .src { flex:0 0 52px; color:var(--dim); }
+  .line .lg { flex:0 0 168px; color:var(--dim); overflow:hidden; text-overflow:ellipsis;
+              white-space:nowrap; }
+  .line .msg { flex:1; min-width:0; word-break:break-word; white-space:pre-wrap; }
+  .line.ERROR .lv { color:var(--bad); }
+  .line.WARN .lv { color:var(--warn); }
+  .line.INFO .lv { color:var(--ok); }
+  .line.DEBUG .lv, .line.TRACE .lv { color:var(--faint); }
+
+  .empty { color:var(--dim); font-size:13px; padding:32px; text-align:center;
+           font-family:inherit; }
+
+  .live { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--dim); }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--faint); }
+  .live.on .dot { background:var(--ok); }
+</style>
 </head>
 <body>
 
+<header>
+  <h1>cat 日志</h1>
+  <span class="sep">|</span>
+  <span class="links">
+    <a href="/settings">设置</a>
+    <a href="/archives">存档</a>
+    <a href="/logs" class="current">日志</a>
+  </span>
+  <span class="grow"></span>
+
+  <select id="f-source" title="只看某一路">
+    <option value="">全部来源</option>
+    <option value="java">Java</option>
+    <option value="linker">跳板</option>
+  </select>
+
+  <input type="text" id="f-item" placeholder="按 itemId 过滤" style="width:150px">
+
+  <span class="live on" id="live"><span class="dot"></span><span id="liveText">实时</span></span>
+
+  <button class="link" id="toggle">暂停</button>
+  <button class="link" id="reload">刷新</button>
+</header>
+
+<main>
+  <div class="summary">
+    <span>共 <b id="s-total">0</b> 条</span>
+    <span>Java <b id="s-java">0</b></span>
+    <span>跳板 <b id="s-linker">0</b></span>
+    <span id="s-updated"></span>
+  </div>
+  <div class="logs" id="logs">
+    <div class="empty">加载中…</div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id)
+const POLL_MS = 2000
+
+let live = true
+let timer = null
+let lastHtml = ''
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]))
+}
+
+function timeOf(ms) {
+  const d = new Date(Number(ms))
+  const p = (n) => String(n).padStart(2, '0')
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
+}
+
+async function load() {
+  const source = $('f-source').value
+  const itemId = $('f-item').value.trim()
+
+  const params = new URLSearchParams({ limit: '400' })
+  if (source) params.set('source', source)
+  if (itemId) params.set('itemId', itemId)
+
+  try {
+    const res = await fetch('/api/logs?' + params.toString(), { cache: 'no-store' })
+    const body = await res.json()
+    if (!body.success) throw new Error(body.message || '读取失败')
+    render(body.data)
+    $('live').classList.add('on')
+    $('liveText').textContent = live ? '实时' : '已暂停'
+  } catch (e) {
+    $('logs').innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`
+    $('live').classList.remove('on')
+    $('liveText').textContent = '断开'
+  }
+}
+
+function render(data) {
+  const entries = data.entries || []
+  const sources = data.sources || {}
+
+  $('s-total').textContent = String(data.count || 0)
+  $('s-java').textContent = String(sources.java || 0)
+  $('s-linker').textContent = String(sources.linker || 0)
+  $('s-updated').textContent = '更新于 ' + timeOf(Date.now())
+
+  if (!entries.length) {
+    $('logs').innerHTML = '<div class="empty">没有日志</div>'
+    lastHtml = ''
+    return
+  }
+
+  const html = entries.map((e) => {
+    const lv = esc(e.level || 'INFO')
+    return `<div class="line ${lv}">`
+      + `<span class="t">${timeOf(e.time)}</span>`
+      + `<span class="lv">${lv}</span>`
+      + `<span class="src">${esc(e.source)}</span>`
+      + `<span class="lg" title="${esc(e.logger)}">${esc(e.logger)}</span>`
+      + `<span class="msg">${esc(e.text)}</span>`
+      + '</div>'
+  }).join('')
+
+  // 内容没变就不重绘，避免页面闪
+  if (html !== lastHtml) {
+    lastHtml = html
+    $('logs').innerHTML = html
+  }
+}
+
+function schedule() {
+  if (timer) clearInterval(timer)
+  if (!live) return
+  timer = setInterval(load, POLL_MS)
+}
+
+$('f-source').addEventListener('change', () => { lastHtml = ''; load() })
+$('f-item').addEventListener('input', () => { lastHtml = ''; load() })
+$('reload').addEventListener('click', () => { lastHtml = ''; load() })
+$('toggle').addEventListener('click', () => {
+  live = !live
+  $('toggle').textContent = live ? '暂停' : '继续'
+  $('liveText').textContent = live ? '实时' : '已暂停'
+  if (live) $('live').classList.add('on')
+  else $('live').classList.remove('on')
+  schedule()
+})
+
+load()
+schedule()
+</script>
 </body>
 </html>

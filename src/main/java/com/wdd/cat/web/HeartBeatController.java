@@ -2,6 +2,8 @@ package com.wdd.cat.web;
 
 import com.wdd.cat.common.cache.AvailableSessions;
 import com.wdd.cat.common.entity.Result;
+import com.wdd.cat.log.LinkerLogReader;
+import com.wdd.cat.log.LogBuffer;
 import com.wdd.cat.web.dto.HeartBeatRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * &#064program: cat
@@ -24,18 +29,41 @@ public class HeartBeatController {
     private static final Logger log = LoggerFactory.getLogger(HeartBeatController.class);
 
     private final AvailableSessions availableSessions;
+    private final LinkerLogReader linkerLogs;
 
-    public HeartBeatController(AvailableSessions availableSessions) {
+    public HeartBeatController(AvailableSessions availableSessions, LinkerLogReader linkerLogs) {
         this.availableSessions = availableSessions;
+        this.linkerLogs = linkerLogs;
     }
 
-    /** 跳板心跳 */
+    /** 跳板心跳：会话清单和跳板日志都是整体覆盖。 */
     @PostMapping("/heartbeat")
     public Result<?> heartBeat(@RequestBody(required = false) HeartBeatRequest req) {
-        //TODO 第一版:报上来的会话清单整体覆盖服务端记录
         availableSessions.replace(req == null ? null : req.sessions());
-        log.debug("心跳：可用会话 {} 个", availableSessions.size());
+        if (req != null && req.logs() != null) {
+            linkerLogs.replace(toEntries(req.logs()));
+        }
+        log.debug("心跳：可用会话 {} 个，跳板日志 {} 条",
+                availableSessions.size(), linkerLogs.size());
         return Result.ok();
+    }
+
+    /** 请求体里的日志 → 缓冲条目。 */
+    private static List<LogBuffer.Entry> toEntries(List<HeartBeatRequest.LogEntry> incoming) {
+        List<LogBuffer.Entry> out = new ArrayList<>(incoming.size());
+        for (HeartBeatRequest.LogEntry e : incoming) {
+            if (e == null) {
+                continue;
+            }
+            out.add(new LogBuffer.Entry(
+                    e.time(),
+                    e.level() == null ? "INFO" : e.level(),
+                    e.chatKey(),
+                    e.itemId(),
+                    e.logger() == null ? "linker" : e.logger(),
+                    e.text() == null ? "" : e.text()));
+        }
+        return out;
     }
 
     /** 检测跳板和服务器是否连接成功。 */

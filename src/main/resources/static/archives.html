@@ -1,11 +1,403 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cat 存档</title>
+<style>
+  :root {
+    --bg:#f7f8fa; --panel:#fff; --fg:#1f2328; --dim:#6b7280; --faint:#9ca3af;
+    --line:#e2e5ea; --accent:#2f6fed; --accent-fg:#fff; --warn:#b45309;
+    --ok:#1a7f37; --bad:#c0392b; --hover:#f0f3f8; --shadow:0 1px 2px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f1115; --panel:#161a20; --fg:#e6edf3; --dim:#8b949e; --faint:#6e7681;
+            --line:#2a3038; --accent:#58a6ff; --accent-fg:#0f1115; --warn:#d29922;
+            --ok:#3fb950; --bad:#f85149; --hover:#1e242c; --shadow:none; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif; }
+
+  header {
+    position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:12px;
+    padding:10px 20px; background:var(--panel); border-bottom:1px solid var(--line);
+    box-shadow:var(--shadow);
+  }
+  header h1 { font-size:15px; margin:0; font-weight:600; }
+  header .sep { color:var(--line); }
+  header .links a { color:var(--dim); text-decoration:none; font-size:13px; padding:4px 8px;
+                    border-radius:6px; }
+  header .links a:hover { background:var(--hover); color:var(--fg); }
+  header .links a.current { color:var(--accent); font-weight:600; }
+  header .grow { flex:1; }
+
+  main { max-width:980px; margin:0 auto; padding:20px 20px 60px; }
+
+  button { font:inherit; cursor:pointer; border:1px solid var(--line); border-radius:7px;
+           padding:6px 16px; background:var(--panel); color:var(--fg); }
+  button:hover { background:var(--hover); }
+  button.primary { background:var(--accent); border-color:var(--accent); color:var(--accent-fg); }
+  button.primary:hover { filter:brightness(1.06); }
+  button:disabled { opacity:.45; cursor:default; }
+  button.link { border:none; background:none; color:var(--dim); padding:4px 8px; font-size:12px; }
+  button.link:hover { color:var(--fg); background:var(--hover); }
+  button.danger { color:var(--bad); border-color:var(--bad); }
+  button.danger:hover { background:rgba(192,57,43,.08); }
+
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+          margin-bottom:14px; box-shadow:var(--shadow); overflow:hidden; }
+  .card > .head { display:flex; align-items:center; gap:10px; padding:13px 18px;
+                  border-bottom:1px solid var(--line); }
+  .card > .head .title { font-size:14.5px; font-weight:600; }
+  .card > .head .grow { flex:1; }
+  .card > .body { padding:14px 18px; }
+  .card.disabled > .head .title { color:var(--dim); }
+
+  .row { display:flex; align-items:baseline; gap:10px; padding:4px 0; font-size:13px; }
+  .row > .k { flex:0 0 96px; color:var(--dim); font-size:12px; }
+  .row > .v { flex:1; min-width:0; word-break:break-all; }
+  .mono { font-family:ui-monospace,Consolas,monospace; font-size:12px; }
+
+  .tag { font-size:11px; border-radius:5px; padding:1px 6px; border:1px solid var(--line);
+         color:var(--dim); white-space:nowrap; }
+  .tag.on { color:var(--ok); border-color:var(--ok); }
+  .tag.off { color:var(--faint); }
+
+  .empty { color:var(--dim); font-size:13px; padding:32px; text-align:center; }
+
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+           background:var(--fg); color:var(--bg); padding:8px 16px; border-radius:8px;
+           font-size:13px; opacity:0; transition:.2s; pointer-events:none; z-index:20; }
+  .toast.show { opacity:1; }
+  .toast.bad { background:var(--bad); color:#fff; }
+
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,.35); display:none;
+           align-items:center; justify-content:center; z-index:30; padding:18px; }
+  .modal.show { display:flex; }
+  .dialog { background:var(--panel); border-radius:12px; width:100%; max-width:620px;
+            max-height:88vh; overflow:auto; box-shadow:0 12px 40px rgba(0,0,0,.25); }
+  .dialog > .head { display:flex; align-items:center; padding:14px 18px;
+                    border-bottom:1px solid var(--line); }
+  .dialog > .head h2 { margin:0; font-size:15px; }
+  .dialog > .head .grow { flex:1; }
+  .dialog > .body { padding:16px 18px; }
+  .dialog > .foot { display:flex; gap:10px; padding:12px 18px;
+                    border-top:1px solid var(--line); }
+  .dialog > .foot .grow { flex:1; }
+
+  .field { margin-bottom:12px; }
+  .field > label { display:block; font-size:12px; color:var(--dim); margin-bottom:4px; }
+  .field input[type=text], .field input[type=password], .field select, .field textarea {
+    font:inherit; color:inherit; background:var(--panel); border:1px solid var(--line);
+    border-radius:7px; padding:6px 10px; width:100%;
+  }
+  .field textarea { min-height:56px; resize:vertical;
+                    font-family:ui-monospace,Consolas,monospace; font-size:12px; }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent; }
+  .field .tip { font-size:11.5px; color:var(--faint); margin-top:3px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+</style>
 </head>
 <body>
 
+<header>
+  <h1>cat 存档</h1>
+  <span class="sep">|</span>
+  <span class="links">
+    <a href="/settings">设置</a>
+    <a href="/archives" class="current">存档</a>
+    <a href="/logs">日志</a>
+  </span>
+  <span class="grow"></span>
+  <span style="font-size:12px;color:var(--dim)" id="count"></span>
+  <button class="primary" id="create">新建存档</button>
+  <button class="link" id="reload">刷新</button>
+</header>
+
+<main>
+  <div id="list"></div>
+</main>
+
+<div class="modal" id="modal">
+  <div class="dialog">
+    <div class="head">
+      <h2 id="modalTitle">新建存档</h2>
+      <span class="grow"></span>
+      <button class="link" id="modalClose">关闭</button>
+    </div>
+    <div class="body">
+      <div class="field">
+        <label>存档名</label>
+        <input type="text" id="f-name" placeholder="例如：黑猫">
+        <div class="tip">一个存档 = 一个模拟人。名字要唯一。</div>
+      </div>
+
+      <div class="field">
+        <label>DSH 会话 ID</label>
+        <input type="text" id="f-sessionId" placeholder="session-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+        <div class="tip">跳板心跳上报的真实会话 id，填错这个存档就收不到消息。</div>
+      </div>
+
+      <div class="field">
+        <label>会话名</label>
+        <input type="text" id="f-sessionTitle" placeholder="黑猫">
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label>渠道</label>
+          <select id="f-kind">
+            <option value="external_qq">外部 QQ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>账号</label>
+          <input type="text" id="f-account" placeholder="10000">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>OneBot 地址</label>
+        <input type="text" id="f-baseUrl" placeholder="http://127.0.0.1:3000">
+      </div>
+
+      <div class="field">
+        <label>Token</label>
+        <input type="password" id="f-token" placeholder="留空 = 沿用原来的">
+        <div class="tip">保存后不会再回显。</div>
+      </div>
+
+      <div class="field">
+        <label>认识的聊天</label>
+        <textarea id="f-chats" placeholder="每行一个，例如：&#10;external_qq:group:20001&#10;external_qq:private:10004"></textarea>
+        <div class="tip">这个存档要盯的群和私聊。格式：渠道:类型:id</div>
+      </div>
+
+      <div class="field">
+        <label><input type="checkbox" id="f-enabled"> 启用这个存档</label>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="primary" id="save">保存</button>
+      <button id="cancel">取消</button>
+      <span class="grow"></span>
+      <button class="danger" id="remove" style="display:none">删除</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id)
+let archives = []
+let editingId = null
+
+function toast(msg, bad) {
+  const el = $('toast')
+  el.textContent = msg
+  el.className = 'toast show' + (bad ? ' bad' : '')
+  setTimeout(() => { el.className = 'toast' }, 2000)
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]))
+}
+
+async function load() {
+  try {
+    const res = await fetch('/api/archives', { cache: 'no-store' })
+    const body = await res.json()
+    if (!body.success) throw new Error(body.message || '读取失败')
+    archives = body.data || []
+    render()
+  } catch (e) {
+    $('list').innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`
+  }
+}
+
+function render() {
+  $('count').textContent = archives.length ? `共 ${archives.length} 个` : ''
+  const box = $('list')
+  box.textContent = ''
+
+  if (!archives.length) {
+    const el = document.createElement('div')
+    el.className = 'empty'
+    el.textContent = '还没有存档。点右上角「新建存档」开始。'
+    box.appendChild(el)
+    return
+  }
+
+  for (const a of archives) {
+    box.appendChild(renderCard(a))
+  }
+}
+
+function renderCard(a) {
+  const card = document.createElement('div')
+  card.className = 'card' + (a.enabled ? '' : ' disabled')
+
+  const head = document.createElement('div')
+  head.className = 'head'
+
+  const title = document.createElement('span')
+  title.className = 'title'
+  title.textContent = a.name || '(未命名)'
+
+  const tag = document.createElement('span')
+  tag.className = 'tag ' + (a.enabled ? 'on' : 'off')
+  tag.textContent = a.enabled ? '启用中' : '已停用'
+
+  const grow = document.createElement('span')
+  grow.className = 'grow'
+
+  const edit = document.createElement('button')
+  edit.className = 'link'
+  edit.textContent = '编辑'
+  edit.addEventListener('click', () => openEditor(a))
+
+  head.append(title, tag, grow, edit)
+
+  const body = document.createElement('div')
+  body.className = 'body'
+
+  body.appendChild(row('存档 ID', a.id, true))
+  body.appendChild(row('DSH 会话',
+    a.session && a.session.sessionId
+      ? `${a.session.sessionId}${a.session.title ? '（' + a.session.title + '）' : ''}`
+      : '未绑定',
+    true))
+
+  const link = (a.links || [])[0]
+  if (link) {
+    body.appendChild(row('渠道',
+      `${link.kind}${link.account ? ' · ' + link.account : ''}`, false))
+    body.appendChild(row('OneBot', link.baseUrl || '未设置', true))
+  } else {
+    body.appendChild(row('渠道', '未配置连接', false))
+  }
+
+  body.appendChild(row('认识',
+    (a.chats && a.chats.length) ? a.chats.join('  ') : '未配置', false))
+
+  card.append(head, body)
+  return card
+}
+
+function row(k, v, mono) {
+  const r = document.createElement('div')
+  r.className = 'row'
+  const kEl = document.createElement('span')
+  kEl.className = 'k'
+  kEl.textContent = k
+  const vEl = document.createElement('span')
+  vEl.className = 'v' + (mono ? ' mono' : '')
+  vEl.textContent = v
+  r.append(kEl, vEl)
+  return r
+}
+
+function openEditor(a) {
+  editingId = a ? a.id : null
+  $('modalTitle').textContent = a ? '编辑存档' : '新建存档'
+
+  const link = a && a.links ? a.links[0] : null
+  const session = a ? a.session : null
+
+  $('f-name').value = a ? (a.name || '') : ''
+  $('f-sessionId').value = session ? (session.sessionId || '') : ''
+  $('f-sessionTitle').value = session ? (session.title || '') : ''
+  $('f-kind').value = link ? link.kind : 'external_qq'
+  $('f-account').value = link ? (link.account || '') : ''
+  $('f-baseUrl').value = link ? (link.baseUrl || '') : ''
+  $('f-token').value = ''
+  $('f-chats').value = a && a.chats ? a.chats.join('\n') : ''
+  $('f-enabled').checked = a ? Boolean(a.enabled) : true
+
+  $('remove').style.display = a ? '' : 'none'
+  $('modal').classList.add('show')
+}
+
+function closeEditor() {
+  $('modal').classList.remove('show')
+  editingId = null
+}
+
+async function save() {
+  const name = $('f-name').value.trim()
+  if (!name) { toast('存档名不能为空', true); return }
+
+  const chats = $('f-chats').value.split('\n').map(s => s.trim()).filter(Boolean)
+  const link = {
+    kind: $('f-kind').value,
+    enabled: true,
+    account: $('f-account').value.trim() || null,
+    baseUrl: $('f-baseUrl').value.trim() || null,
+    token: $('f-token').value.trim() || null,
+  }
+
+  const body = {
+    name,
+    enabled: $('f-enabled').checked,
+    session: {
+      sessionId: $('f-sessionId').value.trim() || null,
+      status: 'BOUND',
+      title: $('f-sessionTitle').value.trim() || null,
+    },
+    links: [link],
+    chats,
+  }
+  if (editingId) body.id = editingId
+
+  $('save').disabled = true
+  try {
+    const res = await fetch('/api/archives', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const data = await res.json()
+    if (!data.success) { toast(data.message || '保存失败', true); return }
+    closeEditor()
+    await load()
+    toast('已保存')
+  } catch (e) {
+    toast('保存失败：' + e.message, true)
+  } finally {
+    $('save').disabled = false
+  }
+}
+
+async function remove() {
+  if (!editingId) return
+  if (!confirm('删除这个存档？它的记忆库会被移进回收站。')) return
+  try {
+    const res = await fetch('/api/archives/' + encodeURIComponent(editingId), { method: 'DELETE' })
+    const data = await res.json()
+    if (!data.success) { toast(data.message || '删除失败', true); return }
+    closeEditor()
+    await load()
+    toast('已删除')
+  } catch (e) {
+    toast('删除失败：' + e.message, true)
+  }
+}
+
+$('create').addEventListener('click', () => openEditor(null))
+$('reload').addEventListener('click', load)
+$('modalClose').addEventListener('click', closeEditor)
+$('cancel').addEventListener('click', closeEditor)
+$('save').addEventListener('click', save)
+$('remove').addEventListener('click', remove)
+$('modal').addEventListener('click', (e) => {
+  if (e.target === $('modal')) closeEditor()
+})
+
+load()
+</script>
 </body>
 </html>

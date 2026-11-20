@@ -1,6 +1,6 @@
 package com.wdd.cat.processor.pre_processor;
 
-import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
+import com.wdd.cat.common.config.EditAbleDefaultConfig;
 import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.ChatKey;
 import com.wdd.cat.message.Content;
@@ -78,7 +78,7 @@ public class MergeProcessor implements PreProcessor {
                 while (!q.isEmpty()) {
                     InboundMessage head = q.peekFirst();
                     long waited = now - head.getTimestamp();
-                    if (waited < UnEditAbleDefaultConfig.MERGE_WINDOW_MS) {
+                    if (waited < EditAbleDefaultConfig.mergeWindowMs) {
                         log.debug("桶 {} 头部只等了 {}ms，继续等", e.getKey().wire(), waited);
                         break;   // 还没躺够，下一轮再取
                     }
@@ -92,13 +92,13 @@ public class MergeProcessor implements PreProcessor {
     /** 从队头取一组能合并的消息，合成一条。 */
     private InboundMessage drainOne(Deque<InboundMessage> q, long now) {
         InboundMessage first = q.pollFirst();
-        List<InboundMessage> group = new ArrayList<>(UnEditAbleDefaultConfig.MERGE_MAX_COUNT);
+        List<InboundMessage> group = new ArrayList<>(EditAbleDefaultConfig.mergeMaxCount);
         group.add(first);
 
-        while (!q.isEmpty() && group.size() < UnEditAbleDefaultConfig.MERGE_MAX_COUNT) {
+        while (!q.isEmpty() && group.size() < EditAbleDefaultConfig.mergeMaxCount) {
             InboundMessage next = q.peekFirst();
             long gap = next.getTimestamp() - group.get(group.size() - 1).getTimestamp();
-            if (gap > UnEditAbleDefaultConfig.MERGE_WINDOW_MS) {
+            if (gap > EditAbleDefaultConfig.mergeWindowMs) {
                 break;   // 断档，下一组
             }
             group.add(q.pollFirst());

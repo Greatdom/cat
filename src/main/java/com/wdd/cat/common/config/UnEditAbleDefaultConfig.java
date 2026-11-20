@@ -3,6 +3,10 @@ package com.wdd.cat.common.config;
 /**
  * &#064program: cat
  * &#064description: 不可配置项，只有开发者能改源码修改
+ * <p>
+ * 合并窗口和条数在 {@link EditAbleDefaultConfig} 里 —— 那两个是设置页能调的。
+ * 依赖它们的派生值这里用方法算，不用常量：常量在类加载时就定死，
+ * 页面改完窗口它不会跟着变。
  * &#064author: black-cat
  * &#064create: 2026-11-15 19:47
  **/
@@ -26,22 +30,20 @@ public class UnEditAbleDefaultConfig {
     /** 一次拉多少条历史。 */
     public static final int POLL_LIMIT = 20;
 
-    /**
-     * CatScheduler线程池的池子上限
-     */
+    /** CatScheduler 线程池的池子上限。 */
     public static final int CAT_SCHEDULER_POOL_LIMIT = 10;
 
-    /** 消息标记为「处理中」后多久视为残留、放回重投（毫秒）。 */
-    public static final long PROCESSING_TIMEOUT_MS = UnEditAbleDefaultConfig.MERGE_WINDOW_MS + 10 * 1000L;
+    /** 消息标记为「处理中」后，比窗口多留多久才视为残留、放回重投（毫秒）。 */
+    public static final long PROCESSING_TIMEOUT_MARGIN_MS = 10_000L;
 
-    /** 合并窗口：消息在队列里躺多久才取出合并（毫秒）。 */
-//    public static final long MERGE_WINDOW_MS = 10_000L;
-            //快速信息合并窗口,测试用
-    public static final long MERGE_WINDOW_MS = 1_200L;
+    /**
+     * 消息标记为「处理中」后多久视为残留、放回重投（毫秒）。
+     * <p>合并窗口可配，所以这里每次现算，不缓存。
+     */
+    public static long processingTimeoutMs() {
+        return EditAbleDefaultConfig.mergeWindowMs + PROCESSING_TIMEOUT_MARGIN_MS;
+    }
 
-
-    /** 一次最多合并几条。 */
-    public static final int MERGE_MAX_COUNT = 8;
 
     private UnEditAbleDefaultConfig() {
     }
