@@ -1,7 +1,8 @@
 spring:
   application:
     name: cat
-
+server:
+  port: 8080
 logging:
   level:
     com.wdd.cat: DEBUG

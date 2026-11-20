@@ -2,6 +2,7 @@ package com.wdd.cat.web;
 
 import com.wdd.cat.archive.Archive;
 import com.wdd.cat.archive.ArchiveStore;
+import com.wdd.cat.common.cache.AvailableSessions;
 import com.wdd.cat.common.entity.Result;
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.message.ChatKey;
@@ -15,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * &#064program: cat
@@ -38,15 +42,65 @@ public class ArchiveController {
     private static final Logger log = LoggerFactory.getLogger(ArchiveController.class);
 
     private final ArchiveStore archiveStore;
+    private final AvailableSessions availableSessions;
 
-    public ArchiveController(ArchiveStore archiveStore) {
+    public ArchiveController(ArchiveStore archiveStore, AvailableSessions availableSessions) {
         this.archiveStore = archiveStore;
+        this.availableSessions = availableSessions;
     }
 
     /** 全部存档，按 id 升序。 */
     @GetMapping
     public Result<List<ArchiveView>> list() {
         return Result.ok(archiveStore.all().stream().map(ArchiveView::from).toList());
+    }
+
+    /**
+     * 新建/编辑页要用的候选清单。
+     * <p>
+     * 会话来自跳板心跳上报（只有 DSH 自己知道有哪些会话）；
+     * 聊天来自现有存档里已经配过的 ChatKey，外加当前在用的账号拼出的群/私聊。
+     * 页面用下拉框选，不用手抄 id。
+     */
+    @GetMapping("/candidates")
+    public Result<CandidatesView> candidates() {
+        // 会话：跳板报上来的，带名字
+        List<String> sessionIds = availableSessions.getSessionIds();
+        List<SessionOption> sessions = new ArrayList<>(sessionIds.size());
+        for (String id : sessionIds) {
+            sessions.add(new SessionOption(id, availableSessions.title(id)));
+        }
+
+        // 聊天：现有存档里出现过的都算候选，去重后按 wire 排序
+        Map<String, ChatOption> chats = new LinkedHashMap<>();
+        for (Archive a : archiveStore.all()) {
+            if (a.contacts() == null) {
+                continue;
+            }
+            for (ChatKey c : a.contacts()) {
+                chats.putIfAbsent(c.wire(), new ChatOption(c.wire(), c.wire()));
+            }
+        }
+
+        // 账号：现有存档的连接
+        List<AccountOption> accounts = new ArrayList<>();
+        for (Archive a : archiveStore.all()) {
+            if (a.links() == null) {
+                continue;
+            }
+            for (Archive.Link l : a.links()) {
+                if (l.account() == null || l.account().isBlank()) {
+                    continue;
+                }
+                accounts.add(new AccountOption(
+                        l.kind() == null ? null : l.kind().wire(),
+                        l.account(),
+                        l.baseUrl(),
+                        a.name()));
+            }
+        }
+
+        return Result.ok(new CandidatesView(sessions, new ArrayList<>(chats.values()), accounts));
     }
 
     /** 读一个存档。 */
@@ -185,6 +239,23 @@ public class ArchiveController {
     }
 
     // ── 响应体 ──
+
+    /** 候选清单：新建/编辑页的下拉选项来源。 */
+    public record CandidatesView(
+            List<SessionOption> sessions,
+            List<ChatOption> chats,
+            List<AccountOption> accounts
+    ) {}
+
+    /** 一个可选的 DSH 会话。 */
+    public record SessionOption(String sessionId, String title) {}
+
+    /** 一个可选的聊天。 */
+    public record ChatOption(String chatKey, String label) {}
+
+    /** 一个可选的账号（来自现有存档的连接）。 */
+    public record AccountOption(String kind, String account, String baseUrl, String archiveName) {}
+
 
     /** 存档视图。雪花 id 一律字符串，token 不下发。 */
     public record ArchiveView(

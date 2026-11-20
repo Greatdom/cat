@@ -98,6 +98,21 @@
     outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent; }
   .field .tip { font-size:11.5px; color:var(--faint); margin-top:3px; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* 聊天多选 */
+  .chat-picker { border:1px solid var(--line); border-radius:7px; padding:6px;
+                 max-height:170px; overflow:auto; }
+  .chat-picker .chat-empty { color:var(--faint); font-size:12px; padding:6px; }
+  .chat-opt { display:flex; align-items:center; gap:8px; padding:4px 6px;
+              border-radius:5px; font-size:12.5px; cursor:pointer; }
+  .chat-opt:hover { background:var(--hover); }
+  .chat-opt input { margin:0; }
+  .chat-opt .mono { font-family:ui-monospace,Consolas,monospace; font-size:11.5px; color:var(--dim); }
+
+  .chat-add { display:flex; gap:6px; margin-top:6px; }
+  .chat-add select { flex:0 0 84px; }
+  .chat-add input { flex:1; }
+  .chat-add button { flex:0 0 auto; padding:6px 14px; }
 </style>
 </head>
 <body>
@@ -136,8 +151,11 @@
 
       <div class="field">
         <label>DSH 会话 ID</label>
-        <input type="text" id="f-sessionId" placeholder="session-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
-        <div class="tip">跳板心跳上报的真实会话 id，填错这个存档就收不到消息。</div>
+        <select id="f-sessionId">
+          <option value="">（选中一个会话）</option>
+        </select>
+        <input type="text" id="f-sessionIdManual" placeholder="列表里没有？手动填 session-xxx" style="margin-top:6px">
+        <div class="tip">候选来自跳板心跳上报。列表空说明跳板还没连上。</div>
       </div>
 
       <div class="field">
@@ -171,8 +189,18 @@
 
       <div class="field">
         <label>认识的聊天</label>
-        <textarea id="f-chats" placeholder="每行一个，例如：&#10;external_qq:group:20001&#10;external_qq:private:10004"></textarea>
-        <div class="tip">这个存档要盯的群和私聊。格式：渠道:类型:id</div>
+        <div id="f-chats" class="chat-picker">
+          <div class="chat-empty">加载候选中…</div>
+        </div>
+        <div class="chat-add">
+          <select id="f-chatNewType">
+            <option value="group">群聊</option>
+            <option value="private">私聊</option>
+          </select>
+          <input type="text" id="f-chatNewId" placeholder="群号 / QQ 号">
+          <button type="button" id="f-chatAdd">添加</button>
+        </div>
+        <div class="tip">勾选这个存档要盯的群和私聊；没有候选项就在右边手动加。</div>
       </div>
 
       <div class="field">
@@ -194,6 +222,10 @@
 const $ = (id) => document.getElementById(id)
 let archives = []
 let editingId = null
+/** 候选清单：{ sessions, chats, accounts } */
+let candidates = { sessions: [], chats: [], accounts: [] }
+/** 编辑时已选的聊天，Set<chatKey> */
+let selectedChats = new Set()
 
 function toast(msg, bad) {
   const el = $('toast')
@@ -205,6 +237,23 @@ function toast(msg, bad) {
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c =>
     ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]))
+}
+
+/** 加载候选清单（会话 / 聊天 / 账号）。 */
+async function loadCandidates() {
+  try {
+    const res = await fetch('/api/archives/candidates', { cache: 'no-store' })
+    const body = await res.json()
+    if (body.success && body.data) {
+      candidates = {
+        sessions: body.data.sessions || [],
+        chats: body.data.chats || [],
+        accounts: body.data.accounts || [],
+      }
+    }
+  } catch {
+    // 候选拿不到不影响存档列表，表单里还能手填
+  }
 }
 
 async function load() {
@@ -301,6 +350,63 @@ function row(k, v, mono) {
   return r
 }
 
+/** 用候选清单填下拉框。 */
+function fillOptions() {
+  // 会话
+  const sel = $('f-sessionId')
+  const keep = sel.value
+  sel.textContent = ''
+  const none = document.createElement('option')
+  none.value = ''
+  none.textContent = '（选中一个会话）'
+  sel.appendChild(none)
+  for (const s of candidates.sessions) {
+    const o = document.createElement('option')
+    o.value = s.sessionId
+    o.textContent = s.title ? `${s.title}（${s.sessionId}）` : s.sessionId
+    sel.appendChild(o)
+  }
+  sel.value = keep
+}
+
+/** 渲染聊天勾选列表。 */
+function renderChatPicker() {
+  const box = $('f-chats')
+  box.textContent = ''
+
+  // 候选 + 已选（已选但不在候选里的也要显示出来）
+  const keys = new Set(candidates.chats.map(c => c.chatKey))
+  for (const k of selectedChats) keys.add(k)
+
+  if (!keys.size) {
+    const empty = document.createElement('div')
+    empty.className = 'chat-empty'
+    empty.textContent = '还没有候选聊天，用下面的输入框手动加。'
+    box.appendChild(empty)
+    return
+  }
+
+  for (const key of [...keys].sort()) {
+    const label = document.createElement('label')
+    label.className = 'chat-opt'
+
+    const cb = document.createElement('input')
+    cb.type = 'checkbox'
+    cb.checked = selectedChats.has(key)
+    cb.addEventListener('change', () => {
+      if (cb.checked) selectedChats.add(key)
+      else selectedChats.delete(key)
+    })
+
+    const name = document.createElement('span')
+    name.className = 'mono'
+    name.textContent = key
+
+    label.append(cb, name)
+    box.appendChild(label)
+  }
+}
+
 function openEditor(a) {
   editingId = a ? a.id : null
   $('modalTitle').textContent = a ? '编辑存档' : '新建存档'
@@ -308,15 +414,29 @@ function openEditor(a) {
   const link = a && a.links ? a.links[0] : null
   const session = a ? a.session : null
 
+  // 候选可能已经变了，重新填一遍再赋值
+  fillOptions()
+
   $('f-name').value = a ? (a.name || '') : ''
-  $('f-sessionId').value = session ? (session.sessionId || '') : ''
   $('f-sessionTitle').value = session ? (session.title || '') : ''
   $('f-kind').value = link ? link.kind : 'external_qq'
-  $('f-account').value = link ? (link.account || '') : ''
   $('f-baseUrl').value = link ? (link.baseUrl || '') : ''
   $('f-token').value = ''
-  $('f-chats').value = a && a.chats ? a.chats.join('\n') : ''
   $('f-enabled').checked = a ? Boolean(a.enabled) : true
+
+  // 会话：在候选里就选中，不在就落到手填框
+  const sid = session ? (session.sessionId || '') : ''
+  const inList = candidates.sessions.some(s => s.sessionId === sid)
+  $('f-sessionId').value = inList ? sid : ''
+  $('f-sessionIdManual').value = inList ? '' : sid
+
+  // 账号：手填，从存档里带出来
+  $('f-account').value = link ? (link.account || '') : ''
+
+  // 聊天
+  selectedChats = new Set(a && a.chats ? a.chats : [])
+  renderChatPicker()
+  $('f-chatNewId').value = ''
 
   $('remove').style.display = a ? '' : 'none'
   $('modal').classList.add('show')
@@ -331,11 +451,14 @@ async function save() {
   const name = $('f-name').value.trim()
   if (!name) { toast('存档名不能为空', true); return }
 
-  const chats = $('f-chats').value.split('\n').map(s => s.trim()).filter(Boolean)
+  // 会话：下拉优先，空了就看手填；账号是手填
+  const sessionId = ($('f-sessionId').value || $('f-sessionIdManual').value).trim()
+  const account = $('f-account').value.trim()
+
   const link = {
     kind: $('f-kind').value,
     enabled: true,
-    account: $('f-account').value.trim() || null,
+    account: account || null,
     baseUrl: $('f-baseUrl').value.trim() || null,
     token: $('f-token').value.trim() || null,
   }
@@ -344,12 +467,12 @@ async function save() {
     name,
     enabled: $('f-enabled').checked,
     session: {
-      sessionId: $('f-sessionId').value.trim() || null,
+      sessionId: sessionId || null,
       status: 'BOUND',
       title: $('f-sessionTitle').value.trim() || null,
     },
     links: [link],
-    chats,
+    chats: [...selectedChats],
   }
   if (editingId) body.id = editingId
 
@@ -364,6 +487,7 @@ async function save() {
     if (!data.success) { toast(data.message || '保存失败', true); return }
     closeEditor()
     await load()
+    await loadCandidates()
     toast('已保存')
   } catch (e) {
     toast('保存失败：' + e.message, true)
@@ -388,7 +512,10 @@ async function remove() {
 }
 
 $('create').addEventListener('click', () => openEditor(null))
-$('reload').addEventListener('click', load)
+$('reload').addEventListener('click', async () => {
+  await load()
+  await loadCandidates()
+})
 $('modalClose').addEventListener('click', closeEditor)
 $('cancel').addEventListener('click', closeEditor)
 $('save').addEventListener('click', save)
@@ -397,7 +524,32 @@ $('modal').addEventListener('click', (e) => {
   if (e.target === $('modal')) closeEditor()
 })
 
-load()
+// 手动加一条聊天
+$('f-chatAdd').addEventListener('click', () => {
+  const type = $('f-chatNewType').value
+  const id = $('f-chatNewId').value.trim()
+  if (!id) { toast('填一下群号或 QQ 号', true); return }
+  if (!/^\d+$/.test(id)) { toast('只能是数字', true); return }
+  const kind = $('f-kind').value
+  selectedChats.add(`${kind}:${type}:${id}`)
+  $('f-chatNewId').value = ''
+  renderChatPicker()
+})
+$('f-chatNewId').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); $('f-chatAdd').click() }
+})
+
+// 选下拉里的会话时，把会话名一起带出来（名字是心跳报的，不该手写）
+$('f-sessionId').addEventListener('change', () => {
+  const id = $('f-sessionId').value
+  if (!id) return
+  const hit = candidates.sessions.find(s => s.sessionId === id)
+  if (hit && hit.title) {
+    $('f-sessionTitle').value = hit.title
+  }
+})
+
+load().then(loadCandidates)
 </script>
 </body>
 </html>
