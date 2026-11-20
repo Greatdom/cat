@@ -21,4 +21,12 @@ public interface ChannelSender<P> {
 
     /** 发一批消息段；返回发送成功的条数。 */
     int send(SendContext context, java.util.List<P> payloads);
+
+    /**
+     * 这个渠道建议的发消息间隔（毫秒）。
+     * <p>和 {@link ChannelPoller#suggestedPollIntervalMs()} 对称：渠道自己最清楚
+     * 能扛住多大的压力。QQ 有风控 2000ms，ESP32 本机硬件 50ms。
+     * <p>OutBoundService 按渠道分桶，每桶按这里的节奏各取一条发出去。
+     */
+    default int suggestedSendIntervalMs() { return 2000; }
 }

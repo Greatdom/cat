@@ -2,6 +2,7 @@ package com.wdd.cat.channel.onebot;
 
 import com.wdd.cat.channel.ChannelSender;
 import com.wdd.cat.channel.SendContext;
+import com.wdd.cat.common.config.EditAbleDefaultConfig;
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.exception.OneBotException;
 import org.slf4j.Logger;
@@ -33,6 +34,12 @@ public class OneBotSender implements ChannelSender<Map<String, Object>> {
     @Override
     public ChannelKind kind() {
         return ChannelKind.EXTERNAL_QQ;
+    }
+
+    /** 发消息间隔和拉取间隔绑在一起：同一个 QQ 号，收发的风控是一体的。 */
+    @Override
+    public int suggestedSendIntervalMs() {
+        return (int) EditAbleDefaultConfig.qqPollAndSendIntervalMs;
     }
 
     @Override
