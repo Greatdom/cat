@@ -12,10 +12,26 @@ import java.util.List;
  * &#064create: 2026-11-19 19:56
  **/
 public record OutboundMessageRequest(
-        String archiveId,         // 哪个存档说的，雪花 id 字符串
-        String sessionId,         // 哪间 DSH 会话，用来找回原来的问题
-        List<Item> messages       // 这一轮要发出去的话
+        String archiveId,      // 哪个存档说的，雪花 id 字符串
+        String sessionId,      // 哪间 DSH 会话
+        InboundRef inbound,    // 这一轮在回的那条入站消息
+        List<Item> messages    // 这一轮要发出去的话
 ) {
+
+    /** 入站消息的身份：够 Java 定位渠道、目标、原话就行。 */
+    public record InboundRef(
+            String archiveId,
+            String sessionId,
+            String channel,          // "external_qq"
+            String chatType,         // "group" / "private"
+            String chatId,
+            String senderId,
+            String senderName,
+            String card,
+            String senderKind,       // HUMAN / BOT / SYSTEM
+            String channelMessageId,
+            long timestamp
+    ) {}
 
     /** 一条回复；chatType / chatId 留空表示沿用入站消息的。 */
     public record Item(
