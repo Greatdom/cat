@@ -31,6 +31,7 @@ public class ObserveProcessor implements PostProcessor{
 
     @Override
     public List<OutboundMessage> process(List<OutboundMessage> in) {
-        return List.of();//消息回顾
+        //TODO 消息回顾：把这一轮的问答记进记忆，本版原样返回
+        return in;
     }
 }

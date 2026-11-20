@@ -9,6 +9,7 @@ import com.wdd.cat.message.MessageSource;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.NormalMessage;
 import com.wdd.cat.message.child.OutboundMessage;
+import com.wdd.cat.service.PostService;
 import com.wdd.cat.web.dto.OutboundMessageRequest;
 import com.wdd.cat.web.dto.OutboundMessageResponse;
 import org.slf4j.Logger;
@@ -36,9 +37,11 @@ public class OutBoundMessageController {
     private static final Logger log = LoggerFactory.getLogger(OutBoundMessageController.class);
 
     private final ArchiveStore archiveStore;
+    private final PostService postService;
 
-    public OutBoundMessageController(ArchiveStore archiveStore) {
+    public OutBoundMessageController(ArchiveStore archiveStore, PostService postService) {
         this.archiveStore = archiveStore;
+        this.postService = postService;
     }
 
     /**
@@ -70,7 +73,9 @@ public class OutBoundMessageController {
             return Result.ok(new OutboundMessageResponse(List.of()));
         }
 
-        //TODO 交给 PostService 跑后处理链，再由 OutBoundService 分发出去
+        // 丢进后处理缓存池，之后交给 PostService 的定时器轮询
+        postService.enqueue(out);
+
         log.info("存档 {} 推回 {} 条回复（会话 {}，回的是 {}:{}）",
                 archive.id(), out.getMessages().size(), req.sessionId(),
                 req.inbound().chatType(), req.inbound().chatId());

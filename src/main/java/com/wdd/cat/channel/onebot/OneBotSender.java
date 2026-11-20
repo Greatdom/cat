@@ -1,9 +1,9 @@
 package com.wdd.cat.channel.onebot;
 
 import com.wdd.cat.channel.ChannelSender;
+import com.wdd.cat.channel.SendContext;
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.exception.OneBotException;
-import com.wdd.cat.message.child.NormalMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,6 @@ import java.util.Map;
  * &#064description: 把 OneBot 消息段数组发出去
  * &#064author: black-cat
  * <p>
- * 第三处限流（按存档分桶、每桶每次一条）的队列在后续实现里。
  * &#064create: 2026-11-15 22:32
  **/
 @Component
@@ -37,33 +36,24 @@ public class OneBotSender implements ChannelSender<Map<String, Object>> {
     }
 
     @Override
-    public int send(long archiveId, String chatType, String chatId, List<Map<String, Object>> payloads) {
-        throw new UnsupportedOperationException("send 需要 client，见 send(client, ...)");
-    }
-
-    /** 用指定 client 发送；返回成功条数。 */
-    public int send(OneBotClient client, String chatType, String chatId,
-                    List<Map<String, Object>> payloads) {
-        if (client == null || payloads == null || payloads.isEmpty()) {
+    public int send(SendContext context, List<Map<String, Object>> payloads) {
+        if (context == null || context.link() == null || payloads == null || payloads.isEmpty()) {
             return 0;
         }
-        String action = "group".equalsIgnoreCase(chatType) ? "send_group_msg" : "send_private_msg";
+        OneBotClient client = pool.forAccount(context.archiveId(), context.link());
+
+        boolean group = "group".equalsIgnoreCase(context.chatType());
+        String action = group ? "send_group_msg" : "send_private_msg";
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("group".equalsIgnoreCase(chatType) ? "group_id" : "user_id", chatId);
+        body.put(group ? "group_id" : "user_id", context.chatId());
         body.put("message", payloads);
 
         try {
             client.call(action, body);
             return 1;
         } catch (OneBotException e) {
-            log.warn("发送失败 {} {}：{}", chatType, chatId, e.getMessage());
+            log.warn("发送失败 {} {}：{}", context.chatType(), context.chatId(), e.getMessage());
             return 0;
         }
-    }
-
-    /** 发送单条 NormalMessage 的便捷方法。 */
-    public int send(OneBotClient client, NormalMessage msg, OneBotOutboundConvertor convertor) {
-        List<Map<String, Object>> payloads = convertor.convert(msg);
-        return send(client, msg.chatType(), msg.chatId(), payloads);
     }
 }

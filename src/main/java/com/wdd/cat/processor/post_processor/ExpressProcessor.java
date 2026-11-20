@@ -32,6 +32,7 @@ public class ExpressProcessor implements PostProcessor{
 
     @Override
     public List<OutboundMessage> process(List<OutboundMessage> in) {
-        return List.of();//消息润色,拆分
+        //TODO 润色与拆条：本来要给每条 NormalMessage 再拆开，本版原样返回
+        return in;
     }
 }

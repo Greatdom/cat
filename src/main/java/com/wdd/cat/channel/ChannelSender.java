@@ -1,12 +1,14 @@
 package com.wdd.cat.channel;
 
-import java.util.List;
 import com.wdd.cat.common.enums.ChannelKind;
 
 /**
  * &#064program: cat
  * <p>
  * &#064description: 将原始报文发出去;P = 该通道的原始报文
+ * <p>
+ * 和 ChannelPoller 对称：连接地址从 {@link SendContext#link()} 取，
+ * 实现不依赖 ArchiveStore —— 那些是 Service 的事。
  * <p>
  * &#064author: black-cat
  * <p>
@@ -17,7 +19,6 @@ import com.wdd.cat.common.enums.ChannelKind;
 public interface ChannelSender<P> {
     ChannelKind kind();
 
-    //TODO对于同一个渠道,如果收发频率生效,那么poller和sender的频率是绑定的
-    /** 发。返回发送成功的条数（可能因为拆条、部分失败而小于 payloads.size()）。 */
-    int send(long archiveId, String chatType, String chatId, List<P> payloads);
+    /** 发一批消息段；返回发送成功的条数。 */
+    int send(SendContext context, java.util.List<P> payloads);
 }
