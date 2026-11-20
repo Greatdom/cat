@@ -30,7 +30,8 @@ public record OutboundMessageRequest(
             String card,
             String senderKind,       // HUMAN / BOT / SYSTEM
             String channelMessageId,
-            long timestamp
+            long timestamp,
+            String text              // 原话，回顾时要用
     ) {}
 
     /** 一条回复；chatType / chatId 留空表示沿用入站消息的。 */

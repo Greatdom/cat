@@ -107,6 +107,8 @@ public class OutBoundMessageController {
         m.setTimestamp(ref.timestamp());
         m.setChannelMessageId(ref.channelMessageId());
         m.setSessionId(ref.sessionId() == null ? req.sessionId() : ref.sessionId());
+        // 原话：回顾时要知道"我在回应什么"
+        m.setContent(ref.text() == null ? null : Content.text(ref.text()));
         m.setSource(new MessageSource(
                 new MessageSource.Origin(channel, ref.chatType(), ref.chatId(), null),
                 new MessageSource.Sender(
