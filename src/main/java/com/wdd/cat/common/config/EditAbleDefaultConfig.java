@@ -28,7 +28,8 @@ import java.util.Set;
 public class EditAbleDefaultConfig {
 
     // ── 字段 ────────────────────────────────────────────────
-    // 声明值就是默认值，ITEMS 里的 default 也从字段读，不会两处写两份。
+    // 字段的声明值就是默认值：类初始化时由 DEFAULTS 读一次并固化，
+    // ITEMS 里只放中文名/区间/分组，不重复写默认值。
 
     /** 存档总数上限。 */
     public static volatile int archiveMaxCount = 4;
