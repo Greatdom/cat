@@ -1,6 +1,7 @@
 package com.wdd.cat.log;
 
 
+import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -21,8 +22,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 @Component
 public class LogBuffer {
 
-    /** 日志保留条数上限 */
-    private static final int CAPACITY = 200;
+    /** 日志保留条数上限。 */
+    private static final int CAPACITY = UnEditAbleDefaultConfig.LOG_BUFFER_CAPACITY;
 
     private final Deque<Entry> entries = new ConcurrentLinkedDeque<>();
 

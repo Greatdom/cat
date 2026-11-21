@@ -33,6 +33,24 @@ public class UnEditAbleDefaultConfig {
     /** CatScheduler 线程池的池子上限。 */
     public static final int CAT_SCHEDULER_POOL_LIMIT = 10;
 
+    // ── 日志条数上限 ──
+    //
+    // 三处数字必须一起看，否则「页面上显示 N 条」和「其实只留了 M 条」会对不上：
+    //   Java 日志缓冲 → LinkerLogReader → /api/logs 单次返回上限
+    // 跳板的「每次上报几条」是另一个维度（设置项 logUploadLimit），不在这里。
+
+    /** Java 自身日志的内存环形缓冲条数。 */
+    public static final int LOG_BUFFER_CAPACITY = 200;
+
+    /** 跳板心跳上报的日志，在 Java 侧最多留几条。 */
+    public static final int LINKER_LOG_CAPACITY = 150;
+
+    /** /api/logs 单次最多返回几条（两个来源合计）。 */
+    public static final int LOGS_RESPONSE_LIMIT = 500;
+
+    /** /api/logs 未传 limit 时的默认条数。 */
+    public static final int LOGS_DEFAULT_LIMIT = 200;
+
     /** 消息标记为「处理中」后，比窗口多留多久才视为残留、放回重投（毫秒）。 */
     public static final long PROCESSING_TIMEOUT_MARGIN_MS = 10_000L;
 

@@ -1,6 +1,7 @@
 package com.wdd.cat.log;
 
 
+import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class LinkerLogReader {
 
     /** 日志保留条数上限 */
-    private static final int CAPACITY = 150;
+    private static final int CAPACITY = UnEditAbleDefaultConfig.LINKER_LOG_CAPACITY;
 
     private final Deque<LogBuffer.Entry> entries = new ConcurrentLinkedDeque<>();
 

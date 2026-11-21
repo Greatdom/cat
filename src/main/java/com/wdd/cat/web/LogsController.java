@@ -1,5 +1,6 @@
 package com.wdd.cat.web;
 
+import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
 import com.wdd.cat.common.entity.Result;
 import com.wdd.cat.log.LinkerLogReader;
 import com.wdd.cat.log.LogBuffer;
@@ -48,7 +49,8 @@ public class LogsController {
     /**
      * 合并查询。
      *
-     * @param limit  每源最多取多少条（默认 200）
+     * @param limit  每源最多取多少条（默认见 {@link UnEditAbleDefaultConfig#LOGS_DEFAULT_LIMIT}，
+     *               注解里的字面量必须与它保持一致 —— 注解参数不能引用常量）
      * @param itemId 只保留该消息的日志；空则全部
      * @param source 只保留某个来源（java / linker），空则全部
      */
@@ -58,7 +60,7 @@ public class LogsController {
             @RequestParam(required = false) String itemId,
             @RequestParam(required = false) String source) {
 
-        int capped = Math.max(1, Math.min(limit, 500));
+        int capped = Math.max(1, Math.min(limit, UnEditAbleDefaultConfig.LOGS_RESPONSE_LIMIT));
         String needle = itemId == null || itemId.isBlank() ? null : itemId.trim();
         String only = source == null || source.isBlank() ? null : source.trim().toLowerCase();
 

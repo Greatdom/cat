@@ -1,17 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  cat 中转站的日志配置。
+
+  三件事：
+    1. 控制台  —— 开发时直接看
+    2. 滚动文件 —— 关掉窗口不会全没，按天切、单文件封顶、保留有限份数
+    3. 内存缓冲 —— 供 /logs 页面读取（LogBufferAppender 把事件喂给 LogBuffer）
+
+  两个 logger 刻意分开：
+    · com.wdd.cat      业务自己的日志，三处都进
+    · root             框架日志（Spring / Tomcat），只进控制台和文件，不进内存缓冲，
+                       否则框架的刷屏会把业务日志挤出 200 条的环形缓冲
+-->
 <configuration>
+
+    <!-- 日志目录：可用 -DLOG_DIR 覆盖，默认相对工作目录 -->
+    <property name="LOG_DIR" value="${LOG_DIR:-./data/logs}"/>
+
+    <!--
+      格式里带 %X{chatKey} / %X{itemId}：这两个值由 MdcScope 设置。
+      没设置时 logback 打空串，不会输出 null。
+    -->
+    <property name="PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{20} %X{chatKey} %X{itemId} - %msg%n"/>
+
     <!-- 控制台 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+            <pattern>${PATTERN}</pattern>
+            <charset>UTF-8</charset>
         </encoder>
     </appender>
 
-    <!-- 写进内存缓冲，供 /api/logs 读 -->
-    <appender name="BUFFER" class="com.wdd.cat.log.LogBufferAppender" />
+    <!-- 滚动文件：按天 + 单文件 20MB 上限，保留 7 天 / 总计 200MB -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/cat.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/cat-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>200MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
 
+    <!--
+      内存缓冲附加器：给 /logs 页面用。
+      这个类由 logback 实例化（不是 Spring Bean），靠 LogBufferHolder 在容器就绪后
+      通过静态 bind() 拿到 LogBuffer；bind 之前的事件直接丢（启动早期那几百毫秒）。
+    -->
+    <appender name="BUFFER" class="com.wdd.cat.log.LogBufferAppender"/>
+
+    <!-- 本服务：三个地方都进。additivity=false 防止再往 root 重复打一遍 -->
+    <logger name="com.wdd.cat" level="${CAT_LOG_LEVEL:-DEBUG}" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="BUFFER"/>
+    </logger>
+
+    <!-- 框架：只进控制台和文件 -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="BUFFER" />
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
     </root>
+
 </configuration>

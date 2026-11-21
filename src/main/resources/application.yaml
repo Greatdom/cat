@@ -3,6 +3,5 @@ spring:
     name: cat
 server:
   port: 8080
-logging:
-  level:
-    com.wdd.cat: DEBUG
+# 日志级别不在这里配：统一由 logback-spring.xml 管（可用 -DCAT_LOG_LEVEL=INFO 覆盖）。
+# 两处都写的话，谁生效取决于加载顺序，排查问题时容易看错。
