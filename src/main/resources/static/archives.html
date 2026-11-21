@@ -44,6 +44,7 @@
   button.link:hover { color:var(--fg); background:var(--hover); }
   button.danger { color:var(--bad); border-color:var(--bad); }
   button.danger:hover { background:rgba(192,57,43,.08); }
+  button.mini { padding:2px 9px; font-size:12px; border-radius:5px; }
 
   .card { background:var(--panel); border:1px solid var(--line); border-radius:10px;
           margin-bottom:14px; box-shadow:var(--shadow); overflow:hidden; }
@@ -75,44 +76,55 @@
   .modal { position:fixed; inset:0; background:rgba(0,0,0,.35); display:none;
            align-items:center; justify-content:center; z-index:30; padding:18px; }
   .modal.show { display:flex; }
-  .dialog { background:var(--panel); border-radius:12px; width:100%; max-width:620px;
-            max-height:88vh; overflow:auto; box-shadow:0 12px 40px rgba(0,0,0,.25); }
+  .dialog { background:var(--panel); border-radius:12px; width:100%; max-width:720px;
+            max-height:90vh; overflow:auto; box-shadow:0 12px 40px rgba(0,0,0,.25); }
   .dialog > .head { display:flex; align-items:center; padding:14px 18px;
-                    border-bottom:1px solid var(--line); }
+                    border-bottom:1px solid var(--line); position:sticky; top:0;
+                    background:var(--panel); z-index:1; }
   .dialog > .head h2 { margin:0; font-size:15px; }
   .dialog > .head .grow { flex:1; }
   .dialog > .body { padding:16px 18px; }
   .dialog > .foot { display:flex; gap:10px; padding:12px 18px;
-                    border-top:1px solid var(--line); }
+                    border-top:1px solid var(--line); position:sticky; bottom:0;
+                    background:var(--panel); }
   .dialog > .foot .grow { flex:1; }
 
-  .field { margin-bottom:12px; }
+  .field { margin-bottom:14px; }
   .field > label { display:block; font-size:12px; color:var(--dim); margin-bottom:4px; }
-  .field input[type=text], .field input[type=password], .field select, .field textarea {
+  .field input[type=text], .field input[type=password], .field select {
     font:inherit; color:inherit; background:var(--panel); border:1px solid var(--line);
     border-radius:7px; padding:6px 10px; width:100%;
   }
-  .field textarea { min-height:56px; resize:vertical;
-                    font-family:ui-monospace,Consolas,monospace; font-size:12px; }
-  .field input:focus, .field select:focus, .field textarea:focus {
-    outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent; }
+  .field input:focus, .field select:focus { outline:2px solid var(--accent); outline-offset:-1px;
+    border-color:transparent; }
   .field .tip { font-size:11.5px; color:var(--faint); margin-top:3px; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
-  /* 聊天多选 */
-  .chat-picker { border:1px solid var(--line); border-radius:7px; padding:6px;
-                 max-height:170px; overflow:auto; }
-  .chat-picker .chat-empty { color:var(--faint); font-size:12px; padding:6px; }
-  .chat-opt { display:flex; align-items:center; gap:8px; padding:4px 6px;
-              border-radius:5px; font-size:12.5px; cursor:pointer; }
-  .chat-opt:hover { background:var(--hover); }
-  .chat-opt input { margin:0; }
-  .chat-opt .mono { font-family:ui-monospace,Consolas,monospace; font-size:11.5px; color:var(--dim); }
+  /* ── Link 列表 ── */
+  .link-row { border:1px solid var(--line); border-radius:9px; padding:12px; margin-bottom:10px;
+              background:var(--bg); }
+  .link-row .lr-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .link-row .lr-head .idx { font-size:12px; color:var(--dim); }
+  .link-row .lr-head .grow { flex:1; }
+  .link-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .link-grid .full { grid-column:1 / -1; }
+  .link-row .f label { display:block; font-size:11.5px; color:var(--dim); margin-bottom:3px; }
+  .link-row .f input, .link-row .f select {
+    font:inherit; color:inherit; background:var(--panel); border:1px solid var(--line);
+    border-radius:6px; padding:5px 9px; width:100%; font-size:12.5px; }
+  .link-row .f input:focus, .link-row .f select:focus { outline:2px solid var(--accent);
+    outline-offset:-1px; border-color:transparent; }
 
-  .chat-add { display:flex; gap:6px; margin-top:6px; }
-  .chat-add select { flex:0 0 84px; }
-  .chat-add input { flex:1; }
-  .chat-add button { flex:0 0 auto; padding:6px 14px; }
+  /* ── 聊天列表 ── */
+  .chat-line { display:flex; align-items:center; gap:8px; padding:5px 8px;
+               border:1px solid var(--line); border-radius:6px; margin-bottom:6px;
+               font-size:12.5px; background:var(--bg); }
+  .chat-line .grow { flex:1; }
+  .chat-add { display:grid; grid-template-columns:110px 110px 1fr auto; gap:8px; margin-top:8px; }
+  .chat-add input, .chat-add select {
+    font:inherit; color:inherit; background:var(--panel); border:1px solid var(--line);
+    border-radius:6px; padding:5px 9px; font-size:12.5px; width:100%; }
+  .hintline { font-size:11.5px; color:var(--faint); margin-top:6px; }
 </style>
 </head>
 <body>
@@ -143,6 +155,7 @@
       <button class="link" id="modalClose">关闭</button>
     </div>
     <div class="body">
+
       <div class="field">
         <label>存档名</label>
         <input type="text" id="f-name" placeholder="例如：黑猫">
@@ -150,62 +163,46 @@
       </div>
 
       <div class="field">
-        <label>DSH 会话 ID</label>
+        <label>绑定的 DSH 会话</label>
         <select id="f-sessionId">
-          <option value="">（选中一个会话）</option>
+          <option value="">（不绑定 / 手动填写）</option>
         </select>
         <input type="text" id="f-sessionIdManual" placeholder="列表里没有？手动填 session-xxx" style="margin-top:6px">
-        <div class="tip">候选来自跳板心跳上报。列表空说明跳板还没连上。</div>
+        <div class="tip">候选来自跳板心跳上报。列表为空说明跳板还没连上 Java。</div>
       </div>
 
       <div class="field">
         <label>会话名</label>
-        <input type="text" id="f-sessionTitle" placeholder="黑猫">
-      </div>
-
-      <div class="grid2">
-        <div class="field">
-          <label>渠道</label>
-          <select id="f-kind">
-            <option value="external_qq">外部 QQ</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>账号</label>
-          <input type="text" id="f-account" placeholder="10000">
-        </div>
+        <input type="text" id="f-sessionTitle" placeholder="选会话后自动带出，也可手改">
       </div>
 
       <div class="field">
-        <label>OneBot 地址</label>
-        <input type="text" id="f-baseUrl" placeholder="http://127.0.0.1:3000">
+        <label>外部连接（Link）</label>
+        <div id="links"></div>
+        <button type="button" class="mini" id="addLink">+ 添加一条连接</button>
+        <div class="tip">一个存档可以有多条连接（比如同时挂两个 QQ 号）。
+          账号在同一渠道内不能重复。</div>
       </div>
 
       <div class="field">
-        <label>Token</label>
-        <input type="password" id="f-token" placeholder="留空 = 沿用原来的">
-        <div class="tip">保存后不会再回显。</div>
-      </div>
-
-      <div class="field">
-        <label>认识的聊天</label>
-        <div id="f-chats" class="chat-picker">
-          <div class="chat-empty">加载候选中…</div>
-        </div>
+        <label>认识的聊天（ChatKey）</label>
+        <div id="chats"></div>
         <div class="chat-add">
-          <select id="f-chatNewType">
+          <select id="chat-kind"></select>
+          <select id="chat-type">
             <option value="group">群聊</option>
             <option value="private">私聊</option>
           </select>
-          <input type="text" id="f-chatNewId" placeholder="群号 / QQ 号">
-          <button type="button" id="f-chatAdd">添加</button>
+          <input type="text" id="chat-id" placeholder="群号 / QQ 号（纯数字）">
+          <button type="button" class="mini" id="addChat">添加</button>
         </div>
-        <div class="tip">勾选这个存档要盯的群和私聊；没有候选项就在右边手动加。</div>
+        <div class="hintline">只有这里列出的群 / 私聊，这个存档才会去拉消息。</div>
       </div>
 
       <div class="field">
         <label><input type="checkbox" id="f-enabled"> 启用这个存档</label>
       </div>
+
     </div>
     <div class="foot">
       <button class="primary" id="save">保存</button>
@@ -220,12 +217,16 @@
 
 <script>
 const $ = (id) => document.getElementById(id)
+
+/** 候选：{ sessions: {id: title}, channels: ["external_qq", ...] } */
+let candidates = { sessions: {}, channels: [] }
 let archives = []
 let editingId = null
-/** 候选清单：{ sessions, chats, accounts } */
-let candidates = { sessions: [], chats: [], accounts: [] }
-/** 编辑时已选的聊天，Set<chatKey> */
-let selectedChats = new Set()
+
+/** 编辑中的 Link 列表，每项是页面自己的状态（不是后端对象） */
+let links = []
+/** 编辑中的 ChatKey 列表，每项 { channel, type, id } */
+let chats = []
 
 function toast(msg, bad) {
   const el = $('toast')
@@ -239,21 +240,32 @@ function esc(s) {
     ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]))
 }
 
-/** 加载候选清单（会话 / 聊天 / 账号）。 */
+/** "external_qq:group:20001" → { channel, type, id }；解析不了返回 null */
+function parseChatWire(wire) {
+  const m = /^([a-z_]+):(group|private):(\d+)$/.exec(String(wire || '').trim())
+  return m ? { channel: m[1], type: m[2], id: m[3] } : null
+}
+
+function chatWire(c) {
+  return `${c.channel}:${c.type}:${c.id}`
+}
+
+// ── 读取 ──────────────────────────────────────────────
+
 async function loadCandidates() {
   try {
     const res = await fetch('/api/archives/candidates', { cache: 'no-store' })
     const body = await res.json()
     if (body.success && body.data) {
       candidates = {
-        sessions: body.data.sessions || [],
-        chats: body.data.chats || [],
-        accounts: body.data.accounts || [],
+        sessions: body.data.sessions || {},
+        channels: body.data.channels || [],
       }
     }
   } catch {
     // 候选拿不到不影响存档列表，表单里还能手填
   }
+  if (!candidates.channels.length) candidates.channels = ['external_qq']
 }
 
 async function load() {
@@ -268,6 +280,8 @@ async function load() {
   }
 }
 
+// ── 列表 ──────────────────────────────────────────────
+
 function render() {
   $('count').textContent = archives.length ? `共 ${archives.length} 个` : ''
   const box = $('list')
@@ -280,10 +294,7 @@ function render() {
     box.appendChild(el)
     return
   }
-
-  for (const a of archives) {
-    box.appendChild(renderCard(a))
-  }
+  for (const a of archives) box.appendChild(renderCard(a))
 }
 
 function renderCard(a) {
@@ -318,20 +329,19 @@ function renderCard(a) {
   body.appendChild(row('DSH 会话',
     a.session && a.session.sessionId
       ? `${a.session.sessionId}${a.session.title ? '（' + a.session.title + '）' : ''}`
-      : '未绑定',
-    true))
+      : '未绑定', true))
 
-  const link = (a.links || [])[0]
-  if (link) {
-    body.appendChild(row('渠道',
-      `${link.kind}${link.account ? ' · ' + link.account : ''}`, false))
-    body.appendChild(row('OneBot', link.baseUrl || '未设置', true))
+  const linkList = a.links || []
+  if (linkList.length) {
+    body.appendChild(row('连接', linkList.map(l =>
+      `${l.kind || '?'}${l.account ? ' · ' + l.account : ''}${l.baseUrl ? ' @ ' + l.baseUrl : ''}`
+    ).join('　|　'), false))
   } else {
-    body.appendChild(row('渠道', '未配置连接', false))
+    body.appendChild(row('连接', '未配置', false))
   }
 
-  body.appendChild(row('认识',
-    (a.chats && a.chats.length) ? a.chats.join('  ') : '未配置', false))
+  const chatList = a.chats || []
+  body.appendChild(row('认识', chatList.length ? chatList.join('　') : '未配置', false))
 
   card.append(head, body)
   return card
@@ -350,94 +360,251 @@ function row(k, v, mono) {
   return r
 }
 
-/** 用候选清单填下拉框。 */
-function fillOptions() {
-  // 会话
+// ── 编辑：会话下拉 ────────────────────────────────────
+
+function fillSessionOptions() {
   const sel = $('f-sessionId')
   const keep = sel.value
   sel.textContent = ''
   const none = document.createElement('option')
   none.value = ''
-  none.textContent = '（选中一个会话）'
+  none.textContent = '（不绑定 / 手动填写）'
   sel.appendChild(none)
-  for (const s of candidates.sessions) {
+  for (const id of Object.keys(candidates.sessions)) {
     const o = document.createElement('option')
-    o.value = s.sessionId
-    o.textContent = s.title ? `${s.title}（${s.sessionId}）` : s.sessionId
+    o.value = id
+    const title = candidates.sessions[id]
+    o.textContent = title ? `${title}（${id}）` : id
     sel.appendChild(o)
   }
   sel.value = keep
 }
 
-/** 渲染聊天勾选列表。 */
-function renderChatPicker() {
-  const box = $('f-chats')
+function fillChannelOptions() {
+  for (const sel of [$('chat-kind')]) {
+    sel.textContent = ''
+    for (const k of candidates.channels) {
+      const o = document.createElement('option')
+      o.value = k
+      o.textContent = k
+      sel.appendChild(o)
+    }
+  }
+}
+
+// ── 编辑：Link 多行 ───────────────────────────────────
+
+function blankLink() {
+  return {
+    kind: candidates.channels[0] || 'external_qq',
+    enabled: true,
+    account: '',
+    baseUrl: '',
+    token: '',
+    deviceId: '',
+    // 已保存过的 token 不会被后端回显；页面要知道「这个密码框是空的但服务端有值」
+    hasStoredToken: false,
+  }
+}
+
+function renderLinks() {
+  const box = $('links')
   box.textContent = ''
 
-  // 候选 + 已选（已选但不在候选里的也要显示出来）
-  const keys = new Set(candidates.chats.map(c => c.chatKey))
-  for (const k of selectedChats) keys.add(k)
-
-  if (!keys.size) {
+  if (!links.length) {
     const empty = document.createElement('div')
-    empty.className = 'chat-empty'
-    empty.textContent = '还没有候选聊天，用下面的输入框手动加。'
+    empty.className = 'hintline'
+    empty.textContent = '还没有连接。至少加一条，否则这个存档收不到也发不出消息。'
     box.appendChild(empty)
     return
   }
 
-  for (const key of [...keys].sort()) {
-    const label = document.createElement('label')
-    label.className = 'chat-opt'
+  links.forEach((link, i) => {
+    const wrap = document.createElement('div')
+    wrap.className = 'link-row'
 
+    const head = document.createElement('div')
+    head.className = 'lr-head'
+    const idx = document.createElement('span')
+    idx.className = 'idx'
+    idx.textContent = `连接 ${i + 1}`
+    const grow = document.createElement('span')
+    grow.className = 'grow'
+    const del = document.createElement('button')
+    del.type = 'button'
+    del.className = 'mini danger'
+    del.textContent = '删除'
+    del.addEventListener('click', () => {
+      links.splice(i, 1)
+      renderLinks()
+    })
+    head.append(idx, grow, del)
+
+    const grid = document.createElement('div')
+    grid.className = 'link-grid'
+
+    grid.appendChild(linkField('渠道', (() => {
+      const sel = document.createElement('select')
+      for (const k of candidates.channels) {
+        const o = document.createElement('option')
+        o.value = k
+        o.textContent = k
+        sel.appendChild(o)
+      }
+      // 存档里可能有已下线的渠道，保留它免得一保存就被改掉
+      if (link.kind && !candidates.channels.includes(link.kind)) {
+        const o = document.createElement('option')
+        o.value = link.kind
+        o.textContent = link.kind + '（不可用）'
+        sel.appendChild(o)
+      }
+      sel.value = link.kind || ''
+      sel.addEventListener('change', () => { link.kind = sel.value })
+      return sel
+    })()))
+
+    grid.appendChild(linkField('账号（QQ 号等）', (() => {
+      const input = document.createElement('input')
+      input.type = 'text'
+      input.value = link.account || ''
+      input.placeholder = '10000'
+      input.addEventListener('input', () => { link.account = input.value.trim() })
+      return input
+    })()))
+
+    const baseWrap = linkField('OneBot 地址', (() => {
+      const input = document.createElement('input')
+      input.type = 'text'
+      input.value = link.baseUrl || ''
+      input.placeholder = 'http://127.0.0.1:3000'
+      input.addEventListener('input', () => { link.baseUrl = input.value.trim() })
+      return input
+    })())
+    baseWrap.classList.add('full')
+    grid.appendChild(baseWrap)
+
+    const tokenWrap = linkField('Token', (() => {
+      const input = document.createElement('input')
+      input.type = 'password'
+      input.value = ''
+      input.placeholder = link.hasStoredToken ? '已保存（留空 = 不改）' : '没有就留空'
+      input.addEventListener('input', () => { link.token = input.value.trim() })
+      return input
+    })())
+    tokenWrap.classList.add('full')
+    grid.appendChild(tokenWrap)
+
+    grid.appendChild(linkField('设备 ID（ESP32 等才用）', (() => {
+      const input = document.createElement('input')
+      input.type = 'text'
+      input.value = link.deviceId || ''
+      input.placeholder = '可留空'
+      input.addEventListener('input', () => { link.deviceId = input.value.trim() })
+      return input
+    })()))
+
+    const enabledWrap = document.createElement('div')
+    enabledWrap.className = 'f'
     const cb = document.createElement('input')
     cb.type = 'checkbox'
-    cb.checked = selectedChats.has(key)
-    cb.addEventListener('change', () => {
-      if (cb.checked) selectedChats.add(key)
-      else selectedChats.delete(key)
+    cb.checked = link.enabled !== false
+    cb.addEventListener('change', () => { link.enabled = cb.checked })
+    enabledWrap.append(cb, document.createTextNode(' 启用这条连接'))
+    grid.appendChild(enabledWrap)
+
+    wrap.append(head, grid)
+    box.appendChild(wrap)
+  })
+}
+
+function linkField(labelText, control) {
+  const f = document.createElement('div')
+  f.className = 'f'
+  const label = document.createElement('label')
+  label.textContent = labelText
+  f.append(label, control)
+  return f
+}
+
+// ── 编辑：ChatKey 增删 ────────────────────────────────
+
+function renderChats() {
+  const box = $('chats')
+  box.textContent = ''
+
+  if (!chats.length) {
+    const empty = document.createElement('div')
+    empty.className = 'hintline'
+    empty.textContent = '还没有认识的聊天。在下面选渠道、类型，填号码后点「添加」。'
+    box.appendChild(empty)
+    return
+  }
+
+  chats.forEach((c, i) => {
+    const line = document.createElement('div')
+    line.className = 'chat-line'
+
+    const label = document.createElement('span')
+    label.className = 'mono'
+    label.textContent = chatWire(c)
+
+    const grow = document.createElement('span')
+    grow.className = 'grow'
+
+    const del = document.createElement('button')
+    del.type = 'button'
+    del.className = 'mini danger'
+    del.textContent = '移除'
+    del.addEventListener('click', () => {
+      chats.splice(i, 1)
+      renderChats()
     })
 
-    const name = document.createElement('span')
-    name.className = 'mono'
-    name.textContent = key
-
-    label.append(cb, name)
-    box.appendChild(label)
-  }
+    line.append(label, grow, del)
+    box.appendChild(line)
+  })
 }
+
+// ── 打开编辑器 ────────────────────────────────────────
 
 function openEditor(a) {
   editingId = a ? a.id : null
   $('modalTitle').textContent = a ? '编辑存档' : '新建存档'
 
-  const link = a && a.links ? a.links[0] : null
-  const session = a ? a.session : null
+  fillSessionOptions()
+  fillChannelOptions()
 
-  // 候选可能已经变了，重新填一遍再赋值
-  fillOptions()
-
+  const session = a && a.session ? a.session : null
   $('f-name').value = a ? (a.name || '') : ''
   $('f-sessionTitle').value = session ? (session.title || '') : ''
-  $('f-kind').value = link ? link.kind : 'external_qq'
-  $('f-baseUrl').value = link ? (link.baseUrl || '') : ''
-  $('f-token').value = ''
   $('f-enabled').checked = a ? Boolean(a.enabled) : true
 
-  // 会话：在候选里就选中，不在就落到手填框
+  // 会话：候选里有就选中下拉，没有就落到手填框
   const sid = session ? (session.sessionId || '') : ''
-  const inList = candidates.sessions.some(s => s.sessionId === sid)
+  const inList = sid && Object.prototype.hasOwnProperty.call(candidates.sessions, sid)
   $('f-sessionId').value = inList ? sid : ''
   $('f-sessionIdManual').value = inList ? '' : sid
 
-  // 账号：手填，从存档里带出来
-  $('f-account').value = link ? (link.account || '') : ''
+  // Link：完整还原（后端不回 token，只记「存过没有」）
+  links = (a && a.links ? a.links : []).map(l => ({
+    kind: l.kind || (candidates.channels[0] || 'external_qq'),
+    enabled: l.enabled !== false,
+    account: l.account || '',
+    baseUrl: l.baseUrl || '',
+    token: '',
+    deviceId: l.deviceId || '',
+    hasStoredToken: Boolean(l.hasStoredToken),
+  }))
+  if (!links.length) links = [blankLink()]
+  renderLinks()
 
-  // 聊天
-  selectedChats = new Set(a && a.chats ? a.chats : [])
-  renderChatPicker()
-  $('f-chatNewId').value = ''
+  // ChatKey：后端给的是 wire 字符串
+  chats = (a && a.chats ? a.chats : [])
+    .map(parseChatWire)
+    .filter(Boolean)
+  renderChats()
 
+  $('chat-id').value = ''
   $('remove').style.display = a ? '' : 'none'
   $('modal').classList.add('show')
 }
@@ -445,23 +612,38 @@ function openEditor(a) {
 function closeEditor() {
   $('modal').classList.remove('show')
   editingId = null
+  links = []
+  chats = []
+}
+
+// ── 保存 / 删除 ───────────────────────────────────────
+
+function collectLinks() {
+  const out = []
+  for (const l of links) {
+    const account = (l.account || '').trim()
+    const baseUrl = (l.baseUrl || '').trim()
+    // 整行都没填的就跳过（用户加了一条又不想填）
+    if (!account && !baseUrl && !l.token) continue
+    const item = {
+      kind: l.kind,
+      enabled: l.enabled !== false,
+      account: account || null,
+      baseUrl: baseUrl || null,
+      deviceId: (l.deviceId || '').trim() || null,
+    }
+    // 只有真的输入了才覆盖 token；留空表示沿用服务端那份
+    if (l.token) item.token = l.token
+    out.push(item)
+  }
+  return out
 }
 
 async function save() {
   const name = $('f-name').value.trim()
   if (!name) { toast('存档名不能为空', true); return }
 
-  // 会话：下拉优先，空了就看手填；账号是手填
   const sessionId = ($('f-sessionId').value || $('f-sessionIdManual').value).trim()
-  const account = $('f-account').value.trim()
-
-  const link = {
-    kind: $('f-kind').value,
-    enabled: true,
-    account: account || null,
-    baseUrl: $('f-baseUrl').value.trim() || null,
-    token: $('f-token').value.trim() || null,
-  }
 
   const body = {
     name,
@@ -471,8 +653,8 @@ async function save() {
       status: 'BOUND',
       title: $('f-sessionTitle').value.trim() || null,
     },
-    links: [link],
-    chats: [...selectedChats],
+    links: collectLinks(),
+    chats: chats.map(chatWire),
   }
   if (editingId) body.id = editingId
 
@@ -498,7 +680,7 @@ async function save() {
 
 async function remove() {
   if (!editingId) return
-  if (!confirm('删除这个存档？它的记忆库会被移进回收站。')) return
+  if (!confirm('删除这个存档？它的目录会被移进回收站。')) return
   try {
     const res = await fetch('/api/archives/' + encodeURIComponent(editingId), { method: 'DELETE' })
     const data = await res.json()
@@ -511,45 +693,48 @@ async function remove() {
   }
 }
 
+// ── 事件绑定 ──────────────────────────────────────────
+
 $('create').addEventListener('click', () => openEditor(null))
-$('reload').addEventListener('click', async () => {
-  await load()
-  await loadCandidates()
-})
+$('reload').addEventListener('click', async () => { await load(); await loadCandidates() })
 $('modalClose').addEventListener('click', closeEditor)
 $('cancel').addEventListener('click', closeEditor)
 $('save').addEventListener('click', save)
 $('remove').addEventListener('click', remove)
-$('modal').addEventListener('click', (e) => {
-  if (e.target === $('modal')) closeEditor()
+$('modal').addEventListener('click', (e) => { if (e.target === $('modal')) closeEditor() })
+
+$('addLink').addEventListener('click', () => {
+  links.push(blankLink())
+  renderLinks()
 })
 
-// 手动加一条聊天
-$('f-chatAdd').addEventListener('click', () => {
-  const type = $('f-chatNewType').value
-  const id = $('f-chatNewId').value.trim()
+$('addChat').addEventListener('click', () => {
+  const channel = $('chat-kind').value
+  const type = $('chat-type').value
+  const id = $('chat-id').value.trim()
   if (!id) { toast('填一下群号或 QQ 号', true); return }
-  if (!/^\d+$/.test(id)) { toast('只能是数字', true); return }
-  const kind = $('f-kind').value
-  selectedChats.add(`${kind}:${type}:${id}`)
-  $('f-chatNewId').value = ''
-  renderChatPicker()
-})
-$('f-chatNewId').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); $('f-chatAdd').click() }
+  if (!/^\d+$/.test(id)) { toast('号码只能是数字', true); return }
+  const wire = chatWire({ channel, type, id })
+  if (chats.some(c => chatWire(c) === wire)) { toast('这个聊天已经加过了', true); return }
+  chats.push({ channel, type, id })
+  renderChats()
+  $('chat-id').value = ''
 })
 
-// 选下拉里的会话时，把会话名一起带出来（名字是心跳报的，不该手写）
+$('chat-id').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); $('addChat').click() }
+})
+
+// 选了下拉里的会话，把会话名带出来（名字是叫板报的，不该靠手写）
 $('f-sessionId').addEventListener('change', () => {
   const id = $('f-sessionId').value
   if (!id) return
-  const hit = candidates.sessions.find(s => s.sessionId === id)
-  if (hit && hit.title) {
-    $('f-sessionTitle').value = hit.title
-  }
+  const title = candidates.sessions[id]
+  if (title) $('f-sessionTitle').value = title
+  $('f-sessionIdManual').value = ''
 })
 
-load().then(loadCandidates)
+load().then(loadCandidates).then(() => { if (!archives.length) render() })
 </script>
 </body>
 </html>
