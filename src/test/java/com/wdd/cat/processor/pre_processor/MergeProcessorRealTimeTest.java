@@ -1,6 +1,6 @@
 package com.wdd.cat.processor.pre_processor;
 
-import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
+import com.wdd.cat.common.config.EditAbleDefaultConfig;
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.message.Content;
 import com.wdd.cat.message.MessageSource;
@@ -38,14 +38,14 @@ class MergeProcessorRealTimeTest {
     @Test
     void messagesOlderThanWindowEmerge() {
         MergeProcessor p = new MergeProcessor();
-        long old = System.currentTimeMillis() - UnEditAbleDefaultConfig.MERGE_WINDOW_MS - 2000;
+        long old = System.currentTimeMillis() - EditAbleDefaultConfig.mergeWindowMs - 2000;
         assertThat(p.process(List.of(msg("很久以前", old)))).hasSize(1);
     }
 
     @Test
     void mergedContentIsMulti() {
         MergeProcessor p = new MergeProcessor();
-        long old = System.currentTimeMillis() - UnEditAbleDefaultConfig.MERGE_WINDOW_MS - 2000;
+        long old = System.currentTimeMillis() - EditAbleDefaultConfig.mergeWindowMs - 2000;
         List<InboundMessage> out = p.process(List.of(
                 msg("在吗", old),
                 msg("在吗", old + 300),

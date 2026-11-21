@@ -1,6 +1,6 @@
 package com.wdd.cat.web;
 
-import com.wdd.cat.common.config.EditableSettings;
+import com.wdd.cat.common.config.EditAbleDefaultConfig;
 import com.wdd.cat.common.entity.Result;
 import com.wdd.cat.service.SettingsService;
 import org.slf4j.Logger;
@@ -44,15 +44,15 @@ public class SettingsController {
     @GetMapping
     public Result<SettingsView> get() {
         List<GroupView> groups = new ArrayList<>();
-        for (EditableSettings.Group group : EditableSettings.GROUPS) {
+        for (EditAbleDefaultConfig.Group group : EditAbleDefaultConfig.GROUPS) {
             List<ItemView> items = new ArrayList<>();
             for (String key : group.keys()) {
-                EditableSettings.Item item = EditableSettings.item(key);
+                EditAbleDefaultConfig.Item item = EditAbleDefaultConfig.item(key);
                 if (item == null) {
                     continue;
                 }
                 items.add(new ItemView(item.key(), item.label(), item.hint(), item.unit(),
-                        item.min(), item.max(), EditableSettings.needsRestart(key)));
+                        item.min(), item.max(), EditAbleDefaultConfig.needsRestart(key)));
             }
             groups.add(new GroupView(group.title(), group.description(), items));
         }

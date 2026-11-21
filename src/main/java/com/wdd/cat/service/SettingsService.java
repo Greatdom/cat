@@ -1,7 +1,6 @@
 package com.wdd.cat.service;
 
 import com.wdd.cat.common.config.EditAbleDefaultConfig;
-import com.wdd.cat.common.config.EditableSettings;
 import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
 import com.wdd.cat.common.utils.JsonCodec;
 import jakarta.annotation.PostConstruct;
@@ -57,7 +56,7 @@ public class SettingsService {
                 Map<String, Object> next = new LinkedHashMap<>();
                 // 只留还认识的键：老文件里可能有已经删掉的项
                 for (Map.Entry<String, Object> e : loaded.entrySet()) {
-                    if (EditableSettings.ALL.contains(e.getKey())) {
+                    if (EditAbleDefaultConfig.ALL.contains(e.getKey())) {
                         next.put(e.getKey(), e.getValue());
                     }
                 }
@@ -94,7 +93,7 @@ public class SettingsService {
         int changed = 0;
         for (Map.Entry<String, Object> entry : incoming.entrySet()) {
             String key = entry.getKey();
-            EditableSettings.Item item = EditableSettings.item(key);
+            EditAbleDefaultConfig.Item item = EditAbleDefaultConfig.item(key);
             if (item == null) {
                 log.debug("忽略不可编辑的键：{}", key);
                 continue;
@@ -135,37 +134,35 @@ public class SettingsService {
 
     // ── 内部 ──
 
-    /** 各键的默认值：从字段读，所以「恢复默认」拿到的是代码里写死的值。 */
+    /**
+     * 各键的默认值。
+     *
+     * <p>从 {@link EditAbleDefaultConfig#ITEMS} 取，不再在本类重写一遍 ——
+     * 以前这里手抄了 4 个数字，加配置项时很容易和字段声明对不上。
+     */
     private static Map<String, Object> defaults() {
-        Map<String, Object> out = new LinkedHashMap<>();
-        out.put("archiveMaxCount", 4);
-        out.put("mergeWindowMs", 1200L);
-        out.put("mergeMaxCount", 8);
-        out.put("qqPollAndSendIntervalMs", 2000L);
-        return out;
+        return EditAbleDefaultConfig.defaults();
     }
 
-    /** 先恢复默认，再盖上覆盖 —— 否则删掉一项不会退回默认 */
+    /**
+     * 把「默认值 + 用户覆盖」一起写回字段。
+     *
+     * <p>注意<b>必须先写默认值再写覆盖</b>：用户删掉某一项覆盖后，
+     * 只有先写回默认值，那一项才会真的退回默认。
+     */
     private void applyToRuntime() {
-        Map<String, Object> all = defaults();
-        all.putAll(overrides);
-        for (Map.Entry<String, Object> e : all.entrySet()) {
-            if (e.getValue() instanceof Number n) {
-                writeField(e.getKey(), n.longValue());
-            }
+        for (Map.Entry<String, Object> e : defaults().entrySet()) {
+            write(e.getKey(), e.getValue());
+        }
+        for (Map.Entry<String, Object> e : overrides.entrySet()) {
+            write(e.getKey(), e.getValue());
         }
     }
 
-    /** 按字段名写回 {@link EditAbleDefaultConfig}。 */
-    private static void writeField(String key, long value) {
-        switch (key) {
-            case "archiveMaxCount" -> EditAbleDefaultConfig.archiveMaxCount = (int) value;
-            case "mergeWindowMs" -> EditAbleDefaultConfig.mergeWindowMs = value;
-            case "mergeMaxCount" -> EditAbleDefaultConfig.mergeMaxCount = (int) value;
-            case "qqPollAndSendIntervalMs" -> EditAbleDefaultConfig.qqPollAndSendIntervalMs = value;
-            default -> {
-                // 白名单里没有的键不写
-            }
+    /** 写一个值到字段；键不认识或值不是数字就跳过。 */
+    private static void write(String key, Object raw) {
+        if (raw instanceof Number n) {
+            EditAbleDefaultConfig.write(key, n.longValue());
         }
     }
 

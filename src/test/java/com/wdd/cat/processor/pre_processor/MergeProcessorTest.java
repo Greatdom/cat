@@ -1,6 +1,6 @@
 package com.wdd.cat.processor.pre_processor;
 
-import com.wdd.cat.common.config.UnEditAbleDefaultConfig;
+import com.wdd.cat.common.config.EditAbleDefaultConfig;
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.message.ChatKey;
 import com.wdd.cat.message.Content;
@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class MergeProcessorTest {
 
-    private static final long WINDOW = UnEditAbleDefaultConfig.MERGE_WINDOW_MS;
+    private static final long WINDOW = EditAbleDefaultConfig.mergeWindowMs;
 
     /** 一个「已经躺够窗口」的时间戳。 */
     private static long aged(long offset) {
@@ -103,7 +103,7 @@ class MergeProcessorTest {
         assertThat(out).isNotEmpty();
         assertThat(out.get(0).getContent()).isInstanceOf(Content.Multi.class);
         assertThat(((Content.Multi) out.get(0).getContent()).parts())
-                .hasSize(UnEditAbleDefaultConfig.MERGE_MAX_COUNT);
+                .hasSize(EditAbleDefaultConfig.mergeMaxCount);
     }
 
     @Test
