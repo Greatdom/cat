@@ -23,10 +23,6 @@ import java.util.Map;
  * <p>
  * &#064description: 设置页Controller
  * <p>
- * GET  /api/settings            读当前值 + 分组元信息
- * POST /api/settings            保存（只认白名单里的键）
- * POST /api/settings/reset/{k}  某一项恢复默认
- * DELETE /api/settings          清空全部覆盖
  * <p>
  * &#064author: black-cat
  * <p>
@@ -44,7 +40,7 @@ public class SettingsController {
         this.settings = settings;
     }
 
-    /** 当前配置 + 分组元信息。页面据此决定渲染哪些项。 */
+    /** 获取 */
     @GetMapping
     public Result<SettingsView> get() {
         List<GroupView> groups = new ArrayList<>();
@@ -63,7 +59,7 @@ public class SettingsController {
         return Result.ok(new SettingsView(settings.current(), settings.overrides(), groups));
     }
 
-    /** 保存。body 形如 {"mergeWindowMs": 1500}。 */
+    /** 保存 */
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody Map<String, Object> body) {
         int changed = settings.save(body);
@@ -81,7 +77,7 @@ public class SettingsController {
         return get();
     }
 
-    /** 清空全部覆盖，全回到默认值。 */
+    /** 全回到默认值 */
     @DeleteMapping
     public Result<SettingsView> clearAll() {
         settings.clearAll();
@@ -91,17 +87,17 @@ public class SettingsController {
 
     // ── 响应体 ──
 
-    /** 整页数据。 */
+    /** 整页数据 */
     public record SettingsView(
             Map<String, Object> values,     // 当前生效值
             Map<String, Object> overrides,  // 只含被改过的
             List<GroupView> groups          // 页面渲染顺序与文案
     ) {}
 
-    /** 一组。 */
+    /** 一组 */
     public record GroupView(String title, String description, List<ItemView> items) {}
 
-    /** 一项。 */
+    /** 一项 */
     public record ItemView(
             String key, String label, String hint, String unit,
             long min, long max, boolean needsRestart) {}

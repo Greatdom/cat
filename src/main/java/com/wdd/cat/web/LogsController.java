@@ -78,7 +78,7 @@ public class LogsController {
         for (LogBuffer.Entry e : linkerList) {
             all.add(toJson("linker", e));
         }
-        // 两源时钟精度不同，按时间排只能保证「大致有序」，同一 itemId 的归组更可靠
+        // 两源时钟精度不同，按时间排只能保证「大致有序」
         all.sort(Comparator.comparingLong(m -> ((Number) m.get("time")).longValue()));
 
         Map<String, Integer> sources = new LinkedHashMap<>();
@@ -101,11 +101,7 @@ public class LogsController {
     }
 
     /**
-     * 合并结果。
-     *
-     * @param entries 按时间升序的合并条目
-     * @param count   总条数
-     * @param sources 各来源各自的条数（便于判断是不是某一路没数据）
+     * 合并结果
      */
     public record MergedLogs(List<Map<String, Object>> entries, int count,
                              Map<String, Integer> sources) {

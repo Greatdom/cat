@@ -48,6 +48,7 @@ public class OutBoundMessageController {
      * 跳板把一轮回复推回来，转成 OutboundMessage 后走后处理链。
      * <p>返回 ack：跳板只有在收到 ack 之后才清掉自己对应的出站缓存。
      */
+    //TODO 待改正
     @PostMapping("/push")
     public Result<OutboundMessageResponse> push(@RequestBody OutboundMessageRequest req) {
         if (req == null || req.messages() == null || req.messages().isEmpty()) {

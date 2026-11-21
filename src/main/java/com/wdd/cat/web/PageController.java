@@ -10,9 +10,6 @@ import org.springframework.web.servlet.view.RedirectView;
  * <p>
  * &#064description: 页面入口：把 /settings 这种短路径转到 static 下的 html
  * <p>
- * 三个页面本身是静态资源（static/settings.html 等），这里只做免打 .html 的映射，
- * 顺便提供根路径入口。
- * <p>
  * &#064author: black-cat
  * <p>
  * &#064create: 2026-11-16 15:58

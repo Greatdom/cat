@@ -24,15 +24,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * &#064program: cat
  * &#064description: 出站业务：按渠道分桶排队，按各自节奏调 sender 发出去
- * <p>
- * 和 InboundService 一个形状：只认 archiveStore + channelRegistry，
- * 渠道实现从注册表查，不依赖任何具体 sender。
- * <p>
- * 三处限流的第三处就在这里：按渠道分桶，每桶按该渠道自己的
- * {@link ChannelSender#suggestedSendIntervalMs()} 各取一条发出去。
- * 渠道之间互不拖累 —— QQ 两秒一条，ESP32 可以快得多。
- * <p>
- * 本版发送失败直接丢弃 —— 防丢失留到以后做。
  * &#064author: black-cat
  * &#064create: 2026-11-15 22:42
  **/
@@ -41,10 +32,10 @@ public class OutBoundService {
 
     private static final Logger log = LoggerFactory.getLogger(OutBoundService.class);
 
-    /** 待发缓存：PostService 写，本类读。键 = 渠道，一个渠道一个桶。 */
+    /** 待发缓存,按渠道分桶 */
     private final Map<ChannelKind, Queue<Pending>> sendQueues = new ConcurrentHashMap<>();
 
-    /** 每个渠道上次发送时间，用于控频。 */
+    /** 每个渠道上次发送时间 */
     private final Map<ChannelKind, Long> lastSentAt = new ConcurrentHashMap<>();
 
     private final ArchiveStore archiveStore;
@@ -57,7 +48,65 @@ public class OutBoundService {
         scheduler.schedule("outbound.handle", UnEditAbleDefaultConfig.TICK_MS, this::handle);
     }
 
-    /** 写进缓存池：拆成 NormalMessage，按渠道分桶（给 PostService 用）。 */
+    void handle() {
+        long now = System.currentTimeMillis();
+        for (Map.Entry<ChannelKind, Queue<Pending>> entry : sendQueues.entrySet()) {
+            ChannelKind channel = entry.getKey();
+            Queue<Pending> bucket = entry.getValue();
+            if (!due(channel, now)) {
+                continue;
+            }
+            Pending pending = bucket.peek();
+            if (pending == null) {
+                continue;
+            }
+            lastSentAt.put(channel, now);
+            // 成不成功都出队：本版失败直接丢弃，防丢失留到以后
+            bucket.poll();
+            sendOne(channel, pending);
+        }
+    }
+
+    private void sendOne(ChannelKind channel, Pending pending) {
+        Archive archive = archiveStore.find(pending.archiveId()).orElse(null);
+        if (archive == null) {
+            log.warn("存档 {} 不存在，这条发不出去：{}", pending.archiveId(), pending.message().text());
+            return;
+        }
+        Archive.Link link = linkOf(archive, channel);
+        if (link == null) {
+            log.warn("存档 {} 没有 {} 渠道的连接，这条发不出去", archive.id(), channel);
+            return;
+        }
+        ChannelRegistry.OutboundPair<?> pair = channelRegistry.outboundPair(link.kind()).orElse(null);
+        if (pair == null) {
+            log.debug("渠道 {} 没有可用的出站实现，丢弃", link.kind());
+            return;
+        }
+
+        SendContext ctx = new SendContext(
+                archive.id(), link, pending.message().chatType(), pending.message().chatId());
+        if (sendThrough(pair, ctx, pending.message()) == 0) {
+            log.warn("存档 {} 发送失败，已丢弃：{}", archive.id(), pending.message().text());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <P> int sendThrough(ChannelRegistry.OutboundPair<?> pair, SendContext ctx,
+                                NormalMessage msg) {
+        OutboundConvertor<P> convertor = (OutboundConvertor<P>) pair.convertor();
+        ChannelSender<P> sender = (ChannelSender<P>) pair.sender();
+
+        List<P> payloads = convertor.convert(msg);
+        if (payloads == null || payloads.isEmpty()) {
+            return 0;
+        }
+        return sender.send(ctx, payloads);
+    }
+
+    /**
+     * 缓存入队
+     */
     public void enqueue(OutboundMessage out) {
         if (out == null || out.getMessages() == null || out.getMessages().isEmpty()) {
             return;
@@ -83,32 +132,7 @@ public class OutBoundService {
         }
     }
 
-    /** 当前各桶积压总数，排障用。 */
-    public int cacheSize() {
-        return sendQueues.values().stream().mapToInt(Queue::size).sum();
-    }
-
-    /** 定时器：每个渠道桶到点就取一条交给它的 sender。 */
-    void handle() {
-        long now = System.currentTimeMillis();
-        for (Map.Entry<ChannelKind, Queue<Pending>> entry : sendQueues.entrySet()) {
-            ChannelKind channel = entry.getKey();
-            Queue<Pending> bucket = entry.getValue();
-            if (!due(channel, now)) {
-                continue;
-            }
-            Pending pending = bucket.peek();
-            if (pending == null) {
-                continue;
-            }
-            lastSentAt.put(channel, now);
-            // 成不成功都出队：本版失败直接丢弃，防丢失留到以后
-            bucket.poll();
-            sendOne(channel, pending);
-        }
-    }
-
-    /** 这个渠道到发送间隔了吗？节奏由该渠道的 sender 自己报。 */
+    /** 渠道到发送间隔特判 */
     private boolean due(ChannelKind channel, long now) {
         Long last = lastSentAt.get(channel);
         if (last != null && now - last < intervalOf(channel)) {
@@ -117,7 +141,6 @@ public class OutBoundService {
         return true;
     }
 
-    /** 问这个渠道的 sender：多久能发一条。 */
     private long intervalOf(ChannelKind channel) {
         ChannelRegistry.OutboundPair<?> pair = channelRegistry.outboundPair(channel).orElse(null);
         if (pair == null) {
@@ -126,43 +149,9 @@ public class OutBoundService {
         return pair.sender().suggestedSendIntervalMs();
     }
 
-    /** 发一条：从存档找连接，从注册表找「转 + 发」那一对。 */
-    private void sendOne(ChannelKind channel, Pending pending) {
-        Archive archive = archiveStore.find(pending.archiveId()).orElse(null);
-        if (archive == null) {
-            log.warn("存档 {} 不存在，这条发不出去：{}", pending.archiveId(), pending.message().text());
-            return;
-        }
-        Archive.Link link = linkOf(archive, channel);
-        if (link == null) {
-            log.warn("存档 {} 没有 {} 渠道的连接，这条发不出去", archive.id(), channel);
-            return;
-        }
-        ChannelRegistry.OutboundPair<?> pair = channelRegistry.outboundPair(link.kind()).orElse(null);
-        if (pair == null) {
-            log.debug("渠道 {} 没有可用的出站实现，丢弃", link.kind());
-            return;
-        }
-
-        SendContext ctx = new SendContext(
-                archive.id(), link, pending.message().chatType(), pending.message().chatId());
-        if (sendThrough(pair, ctx, pending.message()) == 0) {
-            log.warn("存档 {} 发送失败，已丢弃：{}", archive.id(), pending.message().text());
-        }
-    }
-
-    /** 交给配对的 convertor + sender；这里不做渠道特判。 */
-    @SuppressWarnings("unchecked")
-    private <P> int sendThrough(ChannelRegistry.OutboundPair<?> pair, SendContext ctx,
-                                NormalMessage msg) {
-        OutboundConvertor<P> convertor = (OutboundConvertor<P>) pair.convertor();
-        ChannelSender<P> sender = (ChannelSender<P>) pair.sender();
-
-        List<P> payloads = convertor.convert(msg);
-        if (payloads == null || payloads.isEmpty()) {
-            return 0;
-        }
-        return sender.send(ctx, payloads);
+    /** 当前各桶积压总数 */
+    public int cacheSize() {
+        return sendQueues.values().stream().mapToInt(Queue::size).sum();
     }
 
     /** 找这个存档在该渠道上的连接。 */

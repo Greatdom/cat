@@ -20,13 +20,7 @@ import java.util.Map;
 /**
  * &#064program: cat
  * <p>
- * &#064description: 设置相关业务：读写 {@link EditAbleDefaultConfig} 里那几项
- * <p>
- * 默认值写死在 {@link EditAbleDefaultConfig}，用户覆盖值落盘到 data/settings.json。
- * 读的时候默认值打底、覆盖值盖上。
- * <p>
- * 保存时同时把值写回字段，所以改完立刻生效 —— 前提是读取方每次都取字段值，
- * 不把它缓存进局部变量。
+ * &#064description: 设置相关业务:读写 {@link EditAbleDefaultConfig} 里那几项
  * <p>
  * &#064author: black-cat
  * <p>
@@ -41,7 +35,7 @@ public class SettingsService {
 
     private final JsonCodec json;
 
-    /** 用户覆盖值：只有被改过的键。 */
+    /** 用户覆盖值:只有被改过的键 */
     private volatile Map<String, Object> overrides = new LinkedHashMap<>();
 
     public SettingsService(JsonCodec json) {
@@ -77,7 +71,7 @@ public class SettingsService {
         applyToRuntime();
     }
 
-    /** 当前生效的值（默认值 + 覆盖）。 */
+    /** 当前生效的值 */
     public Map<String, Object> current() {
         Map<String, Object> out = defaults();
         out.putAll(overrides);
@@ -91,8 +85,6 @@ public class SettingsService {
 
     /**
      * 保存用户改动。只接受白名单里的键，值会夹到合法区间内。
-     *
-     * @return 实际保存的键数
      */
     public int save(Map<String, Object> incoming) {
         if (incoming == null || incoming.isEmpty()) {
@@ -153,7 +145,7 @@ public class SettingsService {
         return out;
     }
 
-    /** 先恢复默认，再盖上覆盖 —— 否则删掉一项不会退回默认。 */
+    /** 先恢复默认，再盖上覆盖 —— 否则删掉一项不会退回默认 */
     private void applyToRuntime() {
         Map<String, Object> all = defaults();
         all.putAll(overrides);

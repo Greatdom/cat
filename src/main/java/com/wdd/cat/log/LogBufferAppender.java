@@ -11,12 +11,7 @@ import org.slf4j.MDC;
  * &#064program: cat
  * <p>
  * &#064description: logback 附加器：把日志事件写进 {@link LogBuffer}，供 {@code /logs} 页面读取
- * <p>
- * 为什么挂在附加器上而不是各处手动 add：手动要求每个日志点都记得加一行，
- * 漏了就是「页面看不到」的盲区。挂在 logback 上则自动收录，用一个过滤器把范围
- * 收窄到本服务就够了。
- * <p>
- * ⚠ 这个类由 logback 通过 logback-spring.xml 的 &lt;appender class="..."&gt; 实例化，
+ * 这个类由 logback 通过 logback-spring.xml 的 &lt;appender class="..."&gt; 实例化，
  * 不是 Spring Bean，所以不能构造注入。靠静态 setter 拿缓冲实例。
  * <p>
  * &#064author: black-cat

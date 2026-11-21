@@ -36,7 +36,6 @@ public class OneBotSender implements ChannelSender<Map<String, Object>> {
         return ChannelKind.EXTERNAL_QQ;
     }
 
-    /** 发消息间隔和拉取间隔绑在一起：同一个 QQ 号，收发的风控是一体的。 */
     @Override
     public int suggestedSendIntervalMs() {
         return (int) EditAbleDefaultConfig.qqPollAndSendIntervalMs;

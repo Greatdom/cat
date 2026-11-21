@@ -24,12 +24,7 @@ import java.util.Map;
 /**
  * &#064program: cat
  * <p>
- * &#064description: 存档Controller：一个存档 = 一个模拟人
- * <p>
- * GET    /api/archives       列表
- * GET    /api/archives/{id}  单个
- * POST   /api/archives       id 留空 = 新建，有值 = 更新
- * DELETE /api/archives/{id}  删除（移进回收站，不做物理删除）
+ * &#064description: 存档Controller
  * <p>
  * &#064author: black-cat
  * <p>
@@ -49,19 +44,19 @@ public class ArchiveController {
         this.availableSessions = availableSessions;
     }
 
-    /** 全部存档，按 id 升序。 */
     @GetMapping
     public Result<List<ArchiveView>> list() {
         return Result.ok(archiveStore.all().stream().map(ArchiveView::from).toList());
     }
 
     /**
-     * 新建/编辑页要用的候选清单。
+     * 新建/编辑页要用的候选清单
      * <p>
      * 会话来自跳板心跳上报（只有 DSH 自己知道有哪些会话）；
      * 聊天来自现有存档里已经配过的 ChatKey，外加当前在用的账号拼出的群/私聊。
      * 页面用下拉框选，不用手抄 id。
      */
+    //TODO 待改正
     @GetMapping("/candidates")
     public Result<CandidatesView> candidates() {
         // 会话：跳板报上来的，带名字
@@ -103,7 +98,6 @@ public class ArchiveController {
         return Result.ok(new CandidatesView(sessions, new ArrayList<>(chats.values()), accounts));
     }
 
-    /** 读一个存档。 */
     @GetMapping("/{id}")
     public Result<ArchiveView> get(@PathVariable String id) {
         long archiveId = parseId(id);
@@ -115,7 +109,7 @@ public class ArchiveController {
                 .orElseGet(() -> Result.fail("存档不存在：" + id));
     }
 
-    /** 新建或更新：id 留空 = 新建，有值 = 更新。字段为 null 表示这次不改。 */
+    /** 新建或更新:id 留空 = 新建,有值 = 更新;字段为 null 表示这次不改 */
     @PostMapping
     public Result<ArchiveView> save(@RequestBody ArchiveRequest body) {
         if (body == null) {
@@ -141,7 +135,6 @@ public class ArchiveController {
         }
     }
 
-    /** 删除。记忆库会被移进回收站，不做物理删除。 */
     @DeleteMapping("/{id}")
     public Result<?> delete(@PathVariable String id) {
         long archiveId = parseId(id);
@@ -197,7 +190,7 @@ public class ArchiveController {
         }
     }
 
-    /** 绑定的 DSH 会话。 */
+    /** 绑定的会话 */
     public record SessionView(String sessionId, String status, String title) {
 
         Archive.Session toDomain() {
@@ -214,7 +207,7 @@ public class ArchiveController {
         }
     }
 
-    /** 外部连接。token 只进不出。 */
+    /** 外部连接;token 只进不出。 */
     public record LinkView(
             Long id,
             String kind,

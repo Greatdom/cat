@@ -21,10 +21,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * <p>
  * &#064description: 后处理链路
  * <p>
- * 和 InboundService/PreService 一个形状：
- * OutboundMessageController 把消息丢进本类的私有缓存，本类定时轮询取出来，
- * 跑完后处理链后交给 OutBoundService。
- * <p>
  * &#064author: black-cat
  * <p>
  * &#064create: 2026-11-16 12:34
@@ -34,7 +30,7 @@ public class PostService {
 
     private static final Logger log = LoggerFactory.getLogger(PostService.class);
 
-    /** 缓存池：Controller 写，本类读。 */
+    /** 缓存池 */
     private final ConcurrentLinkedQueue<OutboundMessage> outboundMessageCache = new ConcurrentLinkedQueue<>();
 
     private final List<PostProcessor> postProcessors;
@@ -54,19 +50,6 @@ public class PostService {
         postProcessors.sort(Comparator.comparingInt(Processor::order));
     }
 
-    /** 写进缓存池（给 OutboundMessageController / ReflexService 用）。 */
-    public void enqueue(OutboundMessage message) {
-        if (message != null) {
-            outboundMessageCache.add(message);
-        }
-    }
-
-    /** 当前缓存条数，排障用。 */
-    public int cacheSize() {
-        return outboundMessageCache.size();
-    }
-
-    /** 定时器：从缓存池取全部，跑后处理链，结果交给 OutBoundService。 */
     void handle() {
         List<OutboundMessage> current = new ArrayList<>();
         OutboundMessage msg;
@@ -87,5 +70,11 @@ public class PostService {
             outBoundService.enqueue(m);
         }
         log.info("后处理通过 {} 条", current.size());
+    }
+
+    public void enqueue(OutboundMessage message) {
+        if (message != null) {
+            outboundMessageCache.add(message);
+        }
     }
 }

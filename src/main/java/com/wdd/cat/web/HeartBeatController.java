@@ -48,7 +48,6 @@ public class HeartBeatController {
         return Result.ok();
     }
 
-    /** 请求体里的日志 → 缓冲条目。 */
     private static List<LogBuffer.Entry> toEntries(List<HeartBeatRequest.LogEntry> incoming) {
         List<LogBuffer.Entry> out = new ArrayList<>(incoming.size());
         for (HeartBeatRequest.LogEntry e : incoming) {
@@ -66,7 +65,7 @@ public class HeartBeatController {
         return out;
     }
 
-    /** 检测跳板和服务器是否连接成功。 */
+    /** 检测跳板和服务器是否连接成功 */
     @GetMapping("/health")
     public Result<?> health() {
         return Result.ok("服务器运行中");

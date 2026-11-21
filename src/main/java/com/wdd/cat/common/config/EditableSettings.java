@@ -8,14 +8,10 @@ import java.util.Set;
 /**
  * &#064program: cat
  * &#064description: 设置页能调哪些项、中文叫什么、哪些需要重启
- * <p>
- * 只收 {@link EditAbleDefaultConfig} 里的字段 —— 那才是页面该碰的东西。
- * 集中一处：白名单、页面渲染、「需重启」标注要三边对齐，散开一定漏。
- * <p>
- * 键名保留字段名（配置里的真实名字），页面展示用 {@link Item#label()}。
  * &#064author: black-cat
  * &#064create: 2026-11-20 22:45
  **/
+//TODO 实现的不好
 public final class EditableSettings {
 
     private EditableSettings() {
