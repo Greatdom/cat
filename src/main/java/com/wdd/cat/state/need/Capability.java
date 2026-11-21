@@ -2,6 +2,7 @@ package com.wdd.cat.state.need;
 
 
 import com.wdd.cat.common.enums.ChannelKind;
+import com.wdd.cat.common.enums.ContentKind;
 import com.wdd.cat.common.enums.NeedKind;
 import com.wdd.cat.message.Content;
 
@@ -23,5 +24,6 @@ public record Capability(
         HashMap<NeedKind, Double> capabilities,//这个行为能满足什么需求,具体满足了多少;Double要归一化,取值0~1
         String action,              // 行为的名称,例如"发消息" / "走动" / "归纳记忆"
         ChannelKind channel,         // 通过哪个渠道做
-        Content content             //使用这种能力时,应该给跳板的输出json的具体item注入的具体消息Content的具体类型
+        ContentKind contentKind,             //使用这种能力时,应该给跳板的输出json的具体item注入的具体消息Content的具体类型
+        Content contentTemplate       //Content的模板
 ) {}

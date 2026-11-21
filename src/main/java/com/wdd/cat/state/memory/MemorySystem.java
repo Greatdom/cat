@@ -33,7 +33,7 @@ public interface MemorySystem {
 
 
     /** 短时记忆（无状态化的关键）。 */
-    List<ShortTermMemoryEntry> shortTerm();
+    List<ShortTermMemoryEntry> shortTerm(long archiveId);
 
     /** 写长时记忆。 */
     void write(LongTermMemoryEntry entry);

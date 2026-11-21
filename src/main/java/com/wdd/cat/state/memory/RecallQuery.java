@@ -15,6 +15,7 @@ import java.util.Set;
 
 
 public record RecallQuery(
+        long archiveId,           //存档
         String text,              // 拿什么去搜（消息原文）
         Set<String> topicHints,   // 话题提示，用来扩大检索范围
         String aboutWhom,         // 只关心关于谁的记忆（联系人 ID），可为空

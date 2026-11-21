@@ -14,6 +14,7 @@ package com.wdd.cat.state.memory;
 import com.wdd.cat.common.enums.LongTermMemoryKind;
 import com.wdd.cat.message.Content;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,5 +29,6 @@ public record LongTermMemoryEntry(
         long createdAt,            // 什么时候记下的
         long lastUsedAt,           // 上次被召回是什么时候（越近越优先）
         String supersededBy,       // 被哪条取代了（null = 还有效）
-        Set<String> tags          // 标签，辅助检索
+        Set<String> tags,          // 标签，辅助检索
+        HashMap<String,Double> data    //自定义的可供数值计算哈希表
 ) {}

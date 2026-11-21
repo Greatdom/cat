@@ -4,6 +4,7 @@ package com.wdd.cat.state.memory;
 import com.wdd.cat.common.enums.ShortTermEntryKind;
 import com.wdd.cat.message.Content;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -22,5 +23,6 @@ public record ShortTermMemoryEntry(
         long at,                    // 发生时间戳
         ShortTermEntryKind kind,    // 谁说的/谁做的
         Content content,             // 记忆原文
-        boolean resolved            // 只对 I_ASKED 有意义：对方回应了没有
+        boolean resolved,            // 只对 I_ASKED 有意义：对方回应了没有
+        HashMap<String,Double> data    //自定义的可供数值计算哈希表
 ) {}
