@@ -46,13 +46,13 @@ public class OutBoundMessageController {
 
     /**
      * 跳板把一轮回复推回来，转成 OutboundMessage 后走后处理链。
-     * <p>返回 ack：跳板只有在收到 ack 之后才清掉自己对应的出站缓存。
+     * <p>一轮只回一条 ack（带 sessionId）：跳板收到之后清掉该会话整轮的出站缓存。
+     * 没入队（消息全空）时<b>不回 ack</b>，跳板会把这一轮留在缓存里按失败处理。
      */
-    //TODO 待改正
     @PostMapping("/push")
     public Result<OutboundMessageResponse> push(@RequestBody OutboundMessageRequest req) {
         if (req == null || req.messages() == null || req.messages().isEmpty()) {
-            return Result.ok(new OutboundMessageResponse(List.of()));
+            return Result.ok(new OutboundMessageResponse(null));
         }
         long archiveId = parseArchiveId(req.archiveId());
         Archive archive = archiveId < 0 ? null : archiveStore.find(archiveId).orElse(null);
@@ -71,7 +71,10 @@ public class OutBoundMessageController {
 
         OutboundMessage out = toOutbound(archive, req, channel);
         if (out.getMessages().isEmpty()) {
-            return Result.ok(new OutboundMessageResponse(List.of()));
+            // 全是空白消息：什么都没收下，因此不回 ack
+            log.warn("推送的 {} 条回复内容全为空，不入队（会话 {}）",
+                    req.messages().size(), req.sessionId());
+            return Result.ok(new OutboundMessageResponse(null));
         }
 
         // 丢进后处理缓存池，之后交给 PostService 的定时器轮询
@@ -81,23 +84,8 @@ public class OutBoundMessageController {
                 archive.id(), out.getMessages().size(), req.sessionId(),
                 req.inbound().chatType(), req.inbound().chatId());
 
-        return Result.ok(new OutboundMessageResponse(ackItems(archive, req)));
-    }
-
-    /** 一条回复都没被接受时不 ack，跳板留着下一轮重推。 */
-    private static List<OutboundMessageResponse.Item> ackItems(Archive archive,
-                                                               OutboundMessageRequest req) {
-        List<OutboundMessageResponse.Item> items = new ArrayList<>();
-        List<OutboundMessageRequest.Item> in = req.messages();
-        for (int i = 0; i < in.size(); i++) {
-            OutboundMessageRequest.Item item = in.get(i);
-            if (item == null || item.text() == null || item.text().isBlank()) {
-                continue;
-            }
-            items.add(new OutboundMessageResponse.Item(
-                    Long.toString(archive.id()), req.sessionId(), i, item.text()));
-        }
-        return items;
+        // 收下了：一轮一个 ack
+        return Result.ok(OutboundMessageResponse.accepted(req.sessionId()));
     }
 
     /**
