@@ -2,6 +2,7 @@ package com.wdd.cat.state.memory;
 
 
 import com.wdd.cat.common.enums.ShortTermEntryKind;
+import com.wdd.cat.message.Content;
 
 import java.util.Map;
 
@@ -17,9 +18,9 @@ import java.util.Map;
 
 public record ShortTermMemoryEntry(
         String id,                  // 唯一 id
+        String title,              //记忆标题
         long at,                    // 发生时间戳
         ShortTermEntryKind kind,    // 谁说的/谁做的
-        String content,             // 内容原文
-        Map<String, Object> meta,   // 附加信息：I_ASKED 时存当时提议的参数
+        Content content,             // 记忆原文
         boolean resolved            // 只对 I_ASKED 有意义：对方回应了没有
 ) {}

@@ -12,20 +12,21 @@ package com.wdd.cat.state.memory;
  **/
 
 import com.wdd.cat.common.enums.LongTermMemoryKind;
+import com.wdd.cat.message.Content;
 
 import java.util.Map;
 import java.util.Set;
 
 public record LongTermMemoryEntry(
         String id,                 // 唯一 id
+        String title,              //记忆标题
         LongTermMemoryKind kind,           // 什么类型：事实/事件/情绪/关系/偏好/流程
-        String content,            // 正文，一句话说完
+        Content content,            // 记忆正文
         String subject,            // 关于谁："me" / "them:10002" / "world"
         double importance,         // 重要程度 0~1，检索打分要用
         double emotion,            // 情绪色彩 -1~1，负数=不愉快
         long createdAt,            // 什么时候记下的
         long lastUsedAt,           // 上次被召回是什么时候（越近越优先）
         String supersededBy,       // 被哪条取代了（null = 还有效）
-        Set<String> tags,          // 标签，辅助检索
-        Map<String, Object> extra  // 各实现自己塞的字段，不参与通用逻辑
+        Set<String> tags          // 标签，辅助检索
 ) {}

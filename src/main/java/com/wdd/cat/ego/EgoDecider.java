@@ -12,7 +12,7 @@ package com.wdd.cat.ego;
  **/
 
 import com.wdd.cat.state.memory.EmotionState;
-import com.wdd.cat.state.memory.PersonalityView;
+import com.wdd.cat.state.memory.PersonalityState;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.List;
 public class EgoDecider {
 
     public EgoDecision decide(IdWant want, List<SuperegoRule> rules,
-                              PersonalityView p, EmotionState emotion) {
+                              PersonalityState p, EmotionState emotion) {
         // TODO 按裁决规则：
         //      本我强 + 超我硬（≥0.95） → 超我胜
         //      本我强 + 超我软（0.3）   → 本我胜，调整表达

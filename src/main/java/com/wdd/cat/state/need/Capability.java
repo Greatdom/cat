@@ -3,13 +3,14 @@ package com.wdd.cat.state.need;
 
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.common.enums.NeedKind;
+import com.wdd.cat.message.Content;
+
+import java.util.HashMap;
 
 /**
  * &#064program: cat
  * <p>
- * &#064description: 一个“能满足某需求的手段”,
- * 例：社交需求 → QQ 渠道「发消息」效果 0.4。
- * 用来回答“我现在能怎么缓解这个需求”
+ * &#064description: 渠道能力表,每个渠道能执行什么行为,进而满足哪种需求
  * <p>
  * &#064author: black-cat
  * <p>
@@ -18,8 +19,9 @@ import com.wdd.cat.common.enums.NeedKind;
 
 
 public record Capability(
-        NeedKind need,              // 满足哪个需求
-        String action,              // "发消息" / "走动" / "归纳记忆"
-        double effectiveness,       // 0~1，这个手段能缓解多少
-        ChannelKind channel         // 通过哪个渠道做
+        //TODO 要重写NeedKind的equal和HashCode方法
+        HashMap<NeedKind, Double> capabilities,//这个行为能满足什么需求,具体满足了多少;Double要归一化,取值0~1
+        String action,              // 行为的名称,例如"发消息" / "走动" / "归纳记忆"
+        ChannelKind channel,         // 通过哪个渠道做
+        Content content             //使用这种能力时,应该给跳板的输出json的具体item注入的具体消息Content的具体类型
 ) {}

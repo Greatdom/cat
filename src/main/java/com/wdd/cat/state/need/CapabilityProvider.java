@@ -8,16 +8,16 @@ import java.util.List;
 /**
  * &#064program: cat
  * <p>
- * &#064description: 每个渠道声明自己能做什么
- * 加一个新渠道（微信/ESP32），只要实现这个接口，
- * 能力表就自动多出对应的几条 Capability
+ * &#064description: 渠道能力加载器,从文件加载渠道能力
  * <p>
  * &#064author: black-cat
  * <p>
  * &#064create: 2026-11-16 17:45
  **/
 
-public interface CapabilityProvider {
-    ChannelKind kind();
-    List<Capability> capabilities();
+public class CapabilityProvider {
+
+    //维护一个私有缓存供其他模块读取List<Capability>......
+
+    //TODO 加载渠道能力到私有缓存
 }

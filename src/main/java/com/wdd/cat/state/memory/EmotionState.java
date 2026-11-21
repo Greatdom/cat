@@ -25,7 +25,7 @@ public record EmotionState(
 
         // 复合情绪
         Map<BasicEmotion, Double> mix,   // 八种基本情绪各占多少
-        List<String> complex,            // ["心疼"] / ["无奈"]
+        List<String> complex,            // ["心疼"] / ["无奈"]   //TODO 用一个类似单词表的文件记下Pad+基本情绪到complex的映射
 
         long updatedAt,      // 什么时候变成这样的
         long fadeAt          // 什么时候开始衰减

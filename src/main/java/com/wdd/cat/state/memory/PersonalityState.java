@@ -18,7 +18,7 @@ import java.util.Map;
 
 
 
-public record PersonalityView(
+public record PersonalityState(
 
         //  自我认知（从"我关于自己的话"算）
         Map<TraitKind, Double> selfImage,   // 大五人格五维得分
@@ -52,7 +52,7 @@ public record PersonalityView(
     }
 
     /** 还没算出性格时用，什么都不偏。 */
-    public static PersonalityView neutral() {
+    public static PersonalityState neutral() {
         // TODO 五维全 0.5，narrative 空，bias 0
         return null;
     }

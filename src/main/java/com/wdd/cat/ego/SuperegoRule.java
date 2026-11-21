@@ -2,7 +2,7 @@ package com.wdd.cat.ego;
 
 import com.wdd.cat.common.enums.SuperegoAction;
 import com.wdd.cat.common.enums.TraitKind;
-import com.wdd.cat.state.memory.PersonalityView;
+import com.wdd.cat.state.memory.PersonalityState;
 
 import java.util.Map;
 
@@ -26,7 +26,7 @@ public record SuperegoRule(
         Map<TraitKind, Double> traitWeights // 性格怎么调节它：宜人性高→这条规则更重
 ) {
     /** 按当前性格算出这条规则的实际权重。 */
-    public double effectiveWeight(PersonalityView p) {
+    public double effectiveWeight(PersonalityState p) {
         // TODO baseWeight × 用 traitWeights 对 p 做加权
         // TODO 性格算不出来时退回 baseWeight
         return baseWeight;

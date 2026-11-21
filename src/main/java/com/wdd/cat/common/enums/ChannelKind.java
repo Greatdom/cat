@@ -16,8 +16,10 @@ public enum ChannelKind {
     INTERNAL_DATE(ChannelFamily.INTERNAL),      // 站内日程发出的消息
     INTERNAL_DESIRE(ChannelFamily.INTERNAL),    // 站内欲望
     ADD_DATE(ChannelFamily.ADD),                // 模型要求附加一条日程(拦截内置日程插件后由中转站生成)
+    ADD_LONG_TERM_MEMORY(ChannelFamily.ADD),              // 改长时记忆
+    ADD_SHORT_TERM_MEMORY(ChannelFamily.ADD),              // 改短时记忆
     EXTERNAL_QQ(ChannelFamily.EXTERNAL);        // QQ
-    //TODO 还有没实现的,例如INTERNAL_MEMORY ESP32 WECHAT EXTERNAL_AGENT
+    //TODO 还有没实现的,例如EXTERNAL_ESP32 EXTERNAL_WECHAT EXTERNAL_AGENT
 
     private final ChannelFamily family;
 

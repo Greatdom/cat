@@ -1,7 +1,7 @@
 package com.wdd.cat.ego;
 
 
-import com.wdd.cat.state.memory.PersonalityView;
+import com.wdd.cat.state.memory.PersonalityState;
 import org.springframework.scheduling.Trigger;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ import java.util.List;
 @Component
 public class SuperegoEngine {
 
-    public List<SuperegoRule> evaluate(Trigger t, PersonalityView p) {
+    public List<SuperegoRule> evaluate(Trigger t, PersonalityState p) {
         // TODO 从规则表里筛 condition 命中的
         // TODO 用 p 算 effectiveWeight，权重太低的不返回
         return List.of();

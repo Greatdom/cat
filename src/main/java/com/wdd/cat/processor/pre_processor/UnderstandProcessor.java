@@ -1,9 +1,10 @@
-package com.wdd.cat.processor.think_processer;
+package com.wdd.cat.processor.pre_processor;
 
 
 import com.wdd.cat.common.enums.ProcessorKind;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.NormalMessage;
+import com.wdd.cat.processor.pre_processor.PreProcessor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
  * &#064create: 2026-11-16 12:51
  **/
 @Component
-public class UnderstandProcessor implements ThinkProcessor{
+public class UnderstandProcessor implements PreProcessor {
     @Override
     public ProcessorKind kind() {
         return ProcessorKind.UNDERSTAND_PROCESSOR;
