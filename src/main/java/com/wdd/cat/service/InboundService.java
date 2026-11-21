@@ -125,13 +125,7 @@ public class InboundService {
         ChannelPoller<T> poller = (ChannelPoller<T>) pair.poller();
         InboundConvertor<T> convertor = (InboundConvertor<T>) pair.convertor();
 
-        List<T> raw = switch (link.kind()) {
-            case EXTERNAL_QQ -> poller.poll(pollCtx);
-            // 站内渠道没有外部来源，不会进入这里
-            case INTERNAL_DATE, INTERNAL_DESIRE, ADD_DATE -> List.of();
-        };
-
-        return convertor.convert(raw, convCtx);
+        return convertor.convert( poller.poll(pollCtx), convCtx);
     }
 
     private static InboundMessage toInbound(NormalMessage src) {
