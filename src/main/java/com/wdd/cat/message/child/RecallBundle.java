@@ -1,9 +1,12 @@
 package com.wdd.cat.message.child;
 import com.wdd.cat.state.environment.EnvironmentState;
 import com.wdd.cat.state.memory.*;
+import com.wdd.cat.state.memory.derivative_state.EmotionState;
+import com.wdd.cat.state.memory.derivative_state.PersonalityState;
 import com.wdd.cat.state.need.Capability;
 import com.wdd.cat.state.physiology.PhysiologyState;
 
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -18,7 +21,7 @@ import java.util.List;
  **/
 
 public record RecallBundle(
-        List<LongTermMemoryEntry> longTermMemories,          // 相关的长时记忆，已成文
+        HashMap<LongTermMemoryEntry,Double> longTermMemories,      // 相关的长时记忆以及三我裁决给每个记忆的权重(0~1)
         PersonalityState personality,     // 性格
         EmotionState emotionState,            // 情绪
         List<ShortTermMemoryEntry> shortTermMemories,       // 最近发生了什么

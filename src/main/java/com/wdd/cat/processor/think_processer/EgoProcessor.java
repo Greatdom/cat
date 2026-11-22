@@ -31,7 +31,7 @@ public class EgoProcessor implements ThinkProcessor {
 
     @Override
     public List<InboundMessage> process(List<InboundMessage> in) {
-        //TODO 裁决：塞进 egoDecision
+        //TODO 三我裁决,得到MoralVerdict后给InboundMessage的长期消息算权重
         return in;
     }
 }

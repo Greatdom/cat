@@ -5,7 +5,6 @@ import com.wdd.cat.message.MessageSource;
 import com.wdd.cat.message.child.Assessment;
 import com.wdd.cat.message.child.InboundMessage;
 import com.wdd.cat.message.child.RecallBundle;
-import com.wdd.cat.ego.EgoDecision;
 
 import java.util.Map;
 
@@ -31,8 +30,7 @@ public record InboundMessageDto(
         long timestamp,
         Content content,
         Assessment assessment,
-        RecallBundle recallBundle,
-        EgoDecisionView egoDecision
+        RecallBundle recallBundle
 ) {
 
     /** 从领域对象转换。 */
@@ -58,18 +56,9 @@ public record InboundMessageDto(
                 msg.getTimestamp(),
                 msg.getContent(),
                 msg.getAssessment(),
-                msg.getRecallBundle(),
-                EgoDecisionView.from(msg.getEgoDecision())
+                msg.getRecallBundle()
         );
     }
 
-    /** 裁决结果的只读视图：不带 normalMessage。 */
-    public record EgoDecisionView(
-            String reconciliation,
-            Map<String, Object> trace
-    ) {
-        static EgoDecisionView from(EgoDecision d) {
-            return d == null ? null : new EgoDecisionView(d.reconciliation(), d.trace());
-        }
-    }
+
 }

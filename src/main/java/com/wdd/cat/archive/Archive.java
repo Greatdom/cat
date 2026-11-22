@@ -2,6 +2,7 @@ package com.wdd.cat.archive;
 
 import com.wdd.cat.common.enums.ChannelKind;
 import com.wdd.cat.message.ChatKey;
+import com.wdd.cat.state.memory.Entity;
 
 import java.util.List;
 
@@ -22,7 +23,9 @@ public record Archive(
         List<ChatKey> contacts,           // 这个存档认识谁（临时，记忆成熟后由记忆替代）
         PipelineConfig pipeline,          // 装配单
         String createdAt,                 // 创建时间
-        String updatedAt                  // 更新时间
+        String updatedAt                 // 更新时间
+        //List<Entity> entities             //TODO 记忆系统成熟后用来取代contacts字段,目前没用
+
 ) {
 
     /** enabled 为 null 视为 false。 */

@@ -1,5 +1,6 @@
-package com.wdd.cat.state.memory;
-import com.wdd.cat.common.enums.TraitKind;
+package com.wdd.cat.state.memory.derivative_state;
+
+import com.wdd.cat.state.memory.MemoryData;
 
 import java.util.Map;
 
@@ -21,12 +22,14 @@ import java.util.Map;
 public record PersonalityState(
 
         //  自我认知（从"我关于自己的话"算）
-        Map<TraitKind, Double> selfImage,   // 大五人格五维得分
+        Map<MemoryData, Double> selfImage,   // 大五人格五维得分(0~1)
         String selfNarrative,               // "我只是说话直"
+        //TODO创建该对象时请校验MemoryData.family
 
         //  行为画像（从"我做过的事"算）
-        Map<TraitKind, Double> behavior,    // 同样五维，但来自实际行为
+        Map<MemoryData, Double> behavior,    // 同样五维，但来自实际行为(0~1)
         String behaviorNarrative,           // "但她难过我总会偷偷关心"
+        //TODO创建该对象时请校验MemoryData.family
 
         //  偏差：两个面差多少
         double bias,                        // 0 = 一致，1 = 完全不符

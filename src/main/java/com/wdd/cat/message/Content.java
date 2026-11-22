@@ -15,9 +15,25 @@ import com.wdd.cat.common.enums.FileKind;
 
 import java.util.List;
 //TODO将来可以拓展语音等Content实现
+//TODO将来要实现不能让Content递归依赖的算法
 public sealed interface Content {
 
     ContentKind kind();
+
+//    record RelationShip(ChatKey chatKey) implements Content {
+//        @Override
+//        public ContentKind kind() {return ContentKind.RELATIONSHIP;}
+//    }
+//
+//    record LongTermMemoryEntryTemplate() implements Content {
+//        @Override
+//        public ContentKind kind() {return ContentKind.LONG_TERM_MEMORY_ENTRY_TEMPLATE;}
+//    }
+//
+//    record ShortTermMemoryEntryTemplate() implements Content {
+//        @Override
+//        public ContentKind kind(){return ContentKind.SHORT_TERM_MEMORY_ENTRY_TEMPLATE;}
+//    }
 
     /** 纯文本 */
     record Text(String value) implements Content {

@@ -19,10 +19,14 @@ import java.util.Map;
 
 public record ShortTermMemoryEntry(
         String id,                  // 唯一 id
-        String title,              //记忆标题
-        long at,                    // 发生时间戳
-        ShortTermEntryKind kind,    // 谁说的/谁做的
+        long createdAt,            // 什么时候记下的
+        ShortTermEntryKind kind,    // 短期记忆种类
         Content content,             // 记忆原文
-        boolean resolved,            // 只对 I_ASKED 有意义：对方回应了没有
-        HashMap<String,Double> data    //自定义的可供数值计算哈希表
+        HashMap<MemoryData,Double> data,    //自定义的可供数值计算哈希表
+        double importance,         // 重要程度 0~1,表示这个记忆对"我"的主要程度,模拟注意力机制
+        HashMap<Entity,Double> entities,  //记忆和谁有关,关系多大(0~1)
+        HashMap<String,Double> links
+        //这条短期记忆关联的消息记录曾经召回并在提示词参考了多少长期记忆(id)
+        // ,关联多大(-1~1,其中绝对值越大关联性越强,正数代表关联的记忆和本记忆支持本记忆的真实性,反之,负数代表矛盾)
+
 ) {}

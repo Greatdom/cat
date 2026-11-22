@@ -15,5 +15,8 @@ public enum ContentKind {
     TEXT,         // 纯文本
     FILE,         // 文件引用（图片/语音/视频/文档）
     COORDINATE,   // 坐标（硬件上报位置）
-    MULTI         // 多段组合
+    MULTI,        // 多段组合
+    RELATIONSHIP, //人际关系,专门记录在LongTermMemoryEntry的content字段
+    LONG_TERM_MEMORY_ENTRY_TEMPLATE, //长期记忆模板,嵌套进OutboundMessage里的一个NormalMessage,用来作为模板生成长期记忆
+    SHORT_TERM_MEMORY_ENTRY_TEMPLATE //短期记忆模板,嵌套进OutboundMessage里的一个NormalMessage,用来作为模板生成短期记忆
 }

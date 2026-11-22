@@ -1,4 +1,6 @@
 package com.wdd.cat.state.environment;
+import com.wdd.cat.state.memory.Entity;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -17,6 +19,7 @@ import java.util.Set;
 
 
 public record Prop(
+        Entity entity,              //实体
         String id,                  // "lamp-1"
         String name,                // "床头灯"
         String kind,                // "light" / "cup" / "door"

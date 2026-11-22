@@ -3,7 +3,7 @@ package com.wdd.cat.service.tool;
 
 import com.wdd.cat.common.enums.NeedKind;
 import com.wdd.cat.state.environment.EnvironmentState;
-import com.wdd.cat.state.memory.EmotionState;
+import com.wdd.cat.state.memory.derivative_state.EmotionState;
 import com.wdd.cat.state.physiology.PhysiologyState;
 
 import java.util.List;
