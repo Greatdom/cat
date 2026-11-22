@@ -25,10 +25,10 @@ public interface MemorySystem {
     List<ShortTermMemoryEntry> shortTerm(long archiveId);
 
     /** 写长时记忆。 */
-    void write(LongTermMemoryEntry entry);
+    void write(long archiveId,LongTermMemoryEntry entry);
 
     /** 写短时记忆。 */
-    void appendShortTerm(ShortTermMemoryEntry entry);
+    void appendShortTerm(long archiveId,ShortTermMemoryEntry entry);
 
     /** 实现名，用于装配单。 */
     MemoryKind kind();   // "soul-md" / "fish-memory" / "long-short-term" / "none"
