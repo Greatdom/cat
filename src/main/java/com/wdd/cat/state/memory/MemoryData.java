@@ -28,6 +28,9 @@ public enum MemoryData {
 
     //FEEDBACK的积极度,强调于这个短期记忆产生时的语境/得到的反馈是积极的还是消极的
 
+    //CLOCK_TAG的范围,强调这件事的时间范围
+    //CLOCK_TAG的时效性,强调这件事可能的时效性
+
     JOY(MemoryDataFamily.BasicEmotion),           // 高兴
     SADNESS(MemoryDataFamily.BasicEmotion),       // 难过
     ANGER(MemoryDataFamily.BasicEmotion),         // 生气
@@ -65,7 +68,8 @@ public enum MemoryData {
         FEEDBACK, //反馈数值
         //用于长期记忆
         Personality,//性格数值
-        ATTITUDE//态度数值
+        ATTITUDE,//态度数值
+        CLOCK_TAG//时间标识
     }
 
 }
