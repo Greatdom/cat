@@ -14,13 +14,14 @@ package com.wdd.cat.state.memory.derivative_state;
 
 import com.wdd.cat.state.memory.MemoryData;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 public record EmotionState(
 
         // 复合情绪
-        Map<MemoryData, Double> mix,   // 八种基本情绪各占多少(0~1)
+        Map<MemoryData, BigDecimal> mix,   // 八种基本情绪各占多少(0~1)
         //TODO创建该对象时请校验MemoryData.family
         List<String> complex,            // ["心疼"] / ["无奈"]
         // TODO 用一个类似单词表的文件记下Pad+基本情绪到complex的映射

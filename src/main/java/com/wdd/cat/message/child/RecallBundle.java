@@ -6,6 +6,7 @@ import com.wdd.cat.state.memory.derivative_state.PersonalityState;
 import com.wdd.cat.state.need.Capability;
 import com.wdd.cat.state.physiology.PhysiologyState;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public record RecallBundle(
         // 因为ChatKey是Entity的外部渠道的表现,是角色的面具,而Entity才是"我"互动的角色本身
 
 
-        HashMap<LongTermMemoryEntry,Double> longTermMemories,      // 相关的长时记忆以及三我裁决给每个记忆的权重(0~1)
+        HashMap<LongTermMemoryEntry, BigDecimal> longTermMemories,      // 相关的长时记忆以及三我裁决给每个记忆的权重(0~1)
         PersonalityState personality,     // 性格
         EmotionState emotionState,            // 情绪
         List<ShortTermMemoryEntry> shortTermMemories,       // 最近发生了什么

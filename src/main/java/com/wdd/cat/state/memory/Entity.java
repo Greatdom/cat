@@ -2,6 +2,7 @@ package com.wdd.cat.state.memory;
 
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * &#064program: cat
@@ -16,8 +17,10 @@ import java.util.HashMap;
 
 public record Entity(
         String id,  //实体唯一标识
-        String name,     //实体的取名
-        EntityFamily entityFamily   //实体的原型
+        EntityFamily entityFamily,   //实体的原型
+        List<Entity> entity
+        //如果"我"意识到某N+1个实体其实是同一个实体,可以用内置链表把真实感不那么强的剩下N个个实体串联起来
+        //如果"我"又意识到这N+1个指代同一个实体的实体中有其中的实体应该不是同一个实体,就剔除掉某个
 
 ){
     public enum EntityFamily {
