@@ -21,6 +21,11 @@ import java.util.List;
  **/
 
 public record RecallBundle(
+
+        //具体的记忆Entry表现在跳板的提示词中时,提示词应该关心Entity是谁而不是ChatKey是什么,
+        // 因为ChatKey是Entity的外部渠道的表现,是角色的面具,而Entity才是"我"互动的角色本身
+
+
         HashMap<LongTermMemoryEntry,Double> longTermMemories,      // 相关的长时记忆以及三我裁决给每个记忆的权重(0~1)
         PersonalityState personality,     // 性格
         EmotionState emotionState,            // 情绪

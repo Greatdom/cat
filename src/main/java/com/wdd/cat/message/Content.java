@@ -20,11 +20,6 @@ public sealed interface Content {
 
     ContentKind kind();
 
-//    record RelationShip(ChatKey chatKey) implements Content {
-//        @Override
-//        public ContentKind kind() {return ContentKind.RELATIONSHIP;}
-//    }
-//
 //    record LongTermMemoryEntryTemplate() implements Content {
 //        @Override
 //        public ContentKind kind() {return ContentKind.LONG_TERM_MEMORY_ENTRY_TEMPLATE;}

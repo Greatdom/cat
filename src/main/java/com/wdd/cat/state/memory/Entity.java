@@ -16,10 +16,8 @@ import java.util.HashMap;
 
 public record Entity(
         String id,  //实体唯一标识
-        EntityFamily entityFamily,   //实体的原型
-        HashMap<String,Double> links
-        //这个实体和多少长期记忆(id)有关
-        // ,关联多大(-1~1,其中绝对值越大关联性越强,正数代表关联的记忆和本记忆支持本记忆的真实性,反之,负数代表矛盾)
+        String name,     //实体的取名
+        EntityFamily entityFamily   //实体的原型
 
 ){
     public enum EntityFamily {

@@ -21,14 +21,14 @@ import java.util.Set;
 
 public record LongTermMemoryEntry(
         String id,                 // 唯一 id
-        List<LongTermMemoryKind> kind,           // 什么类型的长期记忆,记忆种类可以是复合的
-        Content content,            // 记忆正文,内容一般而言简短
+        LongTermMemoryKind kind,           // 什么类型的长期记忆,记忆种类可以是复合的
+        String text,             // 记忆正文,内容一般而言简短
         double importance,         // 重要程度 0~1,表示这个记忆对"我"的主要程度,模拟记忆淡忘机制
         long createdAt,            // 什么时候记下的
         long lastUsedAt,           // 上次被召回是什么时候（越近越优先）
         Set<String> tags,          // 标签，辅助检索
         HashMap<MemoryData,Double> data,    //自定义的可供数值计算哈希表,值(0~1)
-        HashMap<Entity,Double> entities,  //记忆和谁有关,关系多大(0~1)
+        Entity entity,  //这条记忆是谁想生成/总结的,用于判断这个记忆和谁的相关性比较大
         HashMap<String,Double> links
         //这条短期记忆关联的消息记录曾经召回并在提示词参考了多少长期记忆(id)
         // ,关联多大(-1~1,其中绝对值越大关联性越强,正数代表关联的记忆和本记忆支持本记忆的真实性,反之,负数代表矛盾)

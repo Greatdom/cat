@@ -15,21 +15,18 @@ package com.wdd.cat.common.enums;
 
 public enum ShortTermEntryKind {
 
-    /** 用户说了什么。 */
-    USER_SAID,
+    /** 一轮用户发起,我回复的短期记忆 */
+    A_TERN,
 
-    /** 我说了什么。 */
-    I_SAID,
+    /** 一轮用户发起,我不予理会的短期记忆 */
+    YOU_ASK,
 
     /**
-     * 我问了什么，还在等回应
-     特殊的种类,会提高所属这条短期记忆的注意力
+     * 我问了什么
      */
     I_ASKED,
 
-    /** 我做了什么（建了日程 / 发起主动对话）。记下来避免重复问。 */
-    I_DID,
 
     /** 感知到什么（硬件上报的状态、环境变化）。 */
-    SENSED
+    I_SENSED
 }

@@ -24,7 +24,10 @@ public record Archive(
         PipelineConfig pipeline,          // 装配单
         String createdAt,                 // 创建时间
         String updatedAt                 // 更新时间
-        //List<Entity> entities             //TODO 记忆系统成熟后用来取代contacts字段,目前没用
+        //Map<Entity,List<ChatKey>> entities //TODO 记忆系统成熟后用来取代contacts字段
+        //TODO 这个字段的使用方法是存储实体和渠道之间的关系,实体就是存档认识的人抽象,ChatKey是认识的人的面具,List<ChatKey>间的元素互斥
+        //TODO 新认识人的算法是:在服务器内要加长期记忆的时候如果发现这个记忆所属信息的ChatKey是陌生人就会将其升级为认识的人
+        //TODO 目前没用
 
 ) {
 
